@@ -120,8 +120,8 @@
                         <div class="clearfix mb-3"></div>
 
                         <div class="table-responsive">
-                            <table class="table table-striped mb-0">
-                                <thead>
+                            <table class="table table-striped table-bordered mb-0">
+                                <thead class="bg-light">
                                     <tr>
                                         <th class="text-center">#</th>
                                         <th>Username</th>

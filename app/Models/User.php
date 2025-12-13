@@ -57,6 +57,12 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'id_role');
     }
 
+    public function tutor()
+    {
+        
+        return $this->hasOne(Tutor::class, 'id_user', 'id');
+    }
+
     // public function pegawai()
     // {
     //     return $this->hasOne(Pegawai::class, 'user_id');

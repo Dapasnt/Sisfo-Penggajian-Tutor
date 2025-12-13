@@ -33,7 +33,7 @@ class Pertemuan extends Model
     }
 
     public function tutor() {
-        return $this->hasMany(Tutor::class);
+        return $this->belongsTo(Tutor::class, 'id_tutor', 'id');
     }
 
     public function kelas() {

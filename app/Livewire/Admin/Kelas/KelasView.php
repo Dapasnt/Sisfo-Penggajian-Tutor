@@ -80,7 +80,6 @@ class KelasView extends Component
             'tarif.required' => 'tarif kelas wajib diisi.',
         ]);
         try {
-    
             $kelas = Kelas::findOrFail($this->id_kelas);
             $kelas->update([
                 'id_kelas' => $this->id_kelas,

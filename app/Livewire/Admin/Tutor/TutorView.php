@@ -3,6 +3,8 @@
 namespace App\Livewire\Admin\Tutor;
 
 use App\Models\Tutor;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -14,7 +16,7 @@ class TutorView extends Component
 
     public $formAdd = false, $formEdit = false, $confirmingDelete = false;
     public $search = '';
-    public $id_tutor, $nama, $mapel, $jns_kel, $no_hp;
+    public $id_tutor, $nama, $mapel, $jns_kel, $no_hp, $email, $username;
     public $selectedTutorId;
 
     // protected $paginationTheme = 'bootstrap';
@@ -37,20 +39,32 @@ class TutorView extends Component
             'mapel' => 'required',
             'jns_kel' => 'required|string',
             'no_hp' => 'required',
+            'username' => 'required|unique:users,username',
+            'email'    => 'required|email|unique:users,email',
         ], [
             'nama.required' => 'Nama wajib diisi.',
             'mapel.required' => 'Mata pelajaran wajib diisi.',
             'jns_kel.required' => 'Jenis kelamin wajib diisi.',
             'no_hp.required' => 'Nomor hp wajib diisi.',
+            'email'    => 'Email wajib diisi dan harus format email yang valid.',
+            'username' => 'Username wajib diisi dan harus unik.',
         ]);
         try {
-    
-            Tutor::create([
-                'nama' => $this->nama,
-                'mapel' => $this->mapel,
-                'jns_kel' => $this->jns_kel,
-                'no_hp' => $this->no_hp
-            ]);
+            DB::transaction(function () {
+                $newUser = User::create([
+                    'username' => $this->username,
+                    'email'    => $this->email,
+                    'password' => bcrypt('12345678'),
+                    'id_role'     => 8, // Role Tutor
+                ]);
+                Tutor::create([
+                    'id_user' => $newUser->id,
+                    'nama' => $this->nama,
+                    'mapel' => $this->mapel,
+                    'jns_kel' => $this->jns_kel,
+                    'no_hp' => $this->no_hp
+                ]);
+            });
     
             $this->resetForm();
             $this->dispatch('success-message', 'Tutor berhasil ditambahkan.');

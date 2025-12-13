@@ -1,7 +1,7 @@
 <div class="main-sidebar sidebar-style-2">
     <aside id="sidebar-wrapper">
         <div class="sidebar-brand">
-            <a href="/">Penggajian</a>
+            <a href="/">SIMAJIAN</a>
         </div>
         <div class="sidebar-brand sidebar-brand-sm">
             <a href="/">GTC</a>
@@ -39,7 +39,7 @@
             {{-- Penggajian --}}
             <li class="nav-link {{ request()->routeIs('admin.penggajian.list') ? 'active' : '' }}">
                 <a href="{{ route('admin.penggajian.list') }}">
-                    <i class="fa-solid fa-receipt"></i><span>Penggajian</span>
+                    <i class="fa-solid fa-dollar-sign"></i><span>Penggajian</span>
                 </a>
             </li>
 
@@ -48,6 +48,14 @@
                 <a href="{{ route('admin.pertemuan.list') }}">
                     <i class="fa-solid fa-calendar"></i>
                     <span>Pertemuan</span>
+                </a>
+            </li>
+
+            {{-- Presensi Tutor --}}
+            <li class="nav-link {{ request()->routeIs('admin.presensi.view') ? 'active' : '' }}">
+                <a href="{{ route('admin.presensi.view') }}">
+                    <i class="fa-solid fa-person-chalkboard"></i>
+                    <span>Presensi Tutor</span>
                 </a>
             </li>
         </ul>

@@ -4,7 +4,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     // return view('components.layouts.app');
-    return redirect()->route('login');
+    return redirect()->route('admin.dashboard');
+    // Untuk redirect login
+    // return redirect()->route('login');
 });
 
 Route::get('/login', \App\Livewire\Auth\Login::class)->name('login');
@@ -23,5 +25,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/user/view', \App\Livewire\Admin\User\UserList::class)->name('user.list');
     Route::get('/penggajian/view', \App\Livewire\Admin\Penggajian\PenggajianList::class)->name('penggajian.list');
     Route::get('/pertemuan/view', \App\Livewire\Admin\Pertemuan\PertemuanList::class)->name('pertemuan.list');
+    Route::get('/dashboard', \App\Livewire\Admin\Dashboard\Dashboard::class)->name('dashboard');
+    Route::get('/presensi/view', \App\Livewire\Admin\Presensi\PresensiView::class)->name('presensi.view');
     
 });

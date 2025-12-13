@@ -10,6 +10,7 @@ class Penggajian extends Model
 {
     use HasFactory, SoftDeletes;
     protected $table = 'penggajian';
+    protected $primaryKey = 'id_penggajian';
     protected $guarded = [];
 
     public function scopeSearch($query, $keyword)

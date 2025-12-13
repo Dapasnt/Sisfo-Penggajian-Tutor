@@ -12,7 +12,7 @@ class Kelas extends Model
 
     protected $table = 'kelas';
     protected $guarded = [];
-    // protected $primaryKey = 'id_kelas';
+    protected $primaryKey = 'id_kelas';
     protected $keyType = 'string';
     public $incrementing = false;
     public function scopeSearch($query, $keyword)
