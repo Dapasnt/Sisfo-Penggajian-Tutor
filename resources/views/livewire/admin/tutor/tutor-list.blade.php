@@ -23,8 +23,7 @@
                                     </div>
                                     <!-- Username -->
                                     <div class="form-group row mb-4">
-                                        <label
-                                            class="col-form-label text-md-right col-12 col-md-3 col-lg-3">Username</label>
+                                        <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">Username</label>
                                         <div class="col-sm-12 col-md-7">
                                             <input type="text" class="form-control" wire:model.defer="username">
                                             @error('username') <div class="text-danger">{{ $message }}</div> @enderror
@@ -136,7 +135,7 @@
                             <div class="card-header d-flex flex-column align-items-start">
                                 <div class="w-100 d-flex justify-content-between align-items-center mb-2">
                                     <h4 class="mb-0">List Tutor</h4>
-                                    <button wire:click="$set('formAdd', true)" class="btn btn-primary rounded-lg">Tambah
+                                    <button wire:click="$set('formAdd', true)" class="btn btn-primary rounded-lg"><i class="fa-solid fa-plus mr-2"></i>Tambah
                                         Data</button>
                                 </div>
                             </div>

@@ -43,7 +43,7 @@
                                 </div>
                             </div>
 
-                            <!-- tarif -->
+                            <!-- Tarif -->
                             <div class="form-group row mb-4">
                                 <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">Tarif Kelas</label>
                                 <div class="col-sm-12 col-md-7">
@@ -88,7 +88,7 @@
                     <div class="card-header d-flex flex-column align-items-start">
                         <div class="w-100 d-flex justify-content-between align-items-center mb-2">
                             <h4 class="mb-0">List Kelas</h4>
-                            <button wire:click="$set('formAdd', true)" class="btn btn-primary rounded-lg">Tambah Kelas</button>
+                            <button wire:click="$set('formAdd', true)" class="btn btn-primary rounded-lg"><i class="fa-solid fa-plus mr-2"></i>Tambah Kelas</button>
                         </div>
                     </div>
                     
@@ -112,8 +112,8 @@
                                     <tr>
                                         <th>ID Kelas</th>
                                         <th>Nama</th>
-                                        <th>Deskripsi</th>
                                         <th>Tarif</th>
+                                        <th>Deskripsi</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -123,8 +123,8 @@
                                         {{-- <td class="text-center">{{ $loop->iteration + ($tutorList->firstItem() - 1) }}</td> --}}
                                         <td>{{ $item->id_kelas }}</td>
                                         <td>{{ $item->nama }}</td>
-                                        <td>{{ $item->deskripsi }}</td>
                                         <td>{{ $item->tarif }}</td>
+                                        <td>{{ $item->deskripsi }}</td>
                                         <td>
                                             <div class="btn-group" role="group">
                                                 <button wire:click="edit('{{ $item->id_kelas }}')" class="btn btn-sm btn-warning"><i class="fas fa-pencil-alt"></i></button>
@@ -135,7 +135,7 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="4" class="text-center">Tidak ada data</td>
+                                        <td colspan="5" class="text-center">Tidak ada data</td>
                                     </tr>
                                     @endforelse
                                 </tbody>

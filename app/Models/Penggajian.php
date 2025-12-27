@@ -16,20 +16,33 @@ class Penggajian extends Model
     public function scopeSearch($query, $keyword)
     {
         return $query->where(function ($q) use ($keyword) {
-            $q->where('bulan', 'LIKE', '%' . $keyword . '%')
-                ->orWhere('tahun', 'LIKE', '%' . $keyword . '%')
+            $q->where('periode_bulan', 'LIKE', '%' . $keyword . '%')
+                ->orWhere('periode_tahun', 'LIKE', '%' . $keyword . '%')
                 ->orWhere('total_pertemuan', 'LIKE', '%' . $keyword . '%')
                 ->orWhere('total_honor', 'LIKE', '%' . $keyword . '%')
-                ->orWhere('gaji_akhir', 'LIKE', '%' . $keyword . '%')
-                ->orWhere('status', 'LIKE', '%' . $keyword . '%')
+                ->orWhere('total_durasi', 'LIKE', '%' . $keyword . '%')
+                ->orWhere('total_pertemuan', 'LIKE', '%' . $keyword . '%')
+                ->orWhere('gaji_dibayar', 'LIKE', '%' . $keyword . '%')
+                ->orWhere('status_pembayaran', 'LIKE', '%' . $keyword . '%')
                 ->orWhereHas('tutor', function ($tq) use ($keyword) {
-                    $tq->where('nama', 'like', '%' . $keyword . '%')
-                        ->orWhere('no_hp', 'like', '%' . $keyword . '%');
+                    $tq->where('nama', 'like', '%' . $keyword . '%');
                 });
         });
     }
 
     public function tutor() {
         return $this->belongsTo(Tutor::class, 'id_tutor', 'id');
+    }
+    public function kelas() {
+        return $this->belongsTo(Kelas::class, 'id_kelas', 'id_kelas');
+    }
+    public function durasi() {
+        return $this->belongsTo(Durasi::class, 'id_durasi', 'id_durasi');
+    }
+    public function jenjang() {
+        return $this->belongsTo(Jenjang::class, 'id_jenjang', 'id_jenjang');
+    }
+    public function pertemuan() {
+        return $this->belongsTo(Pertemuan::class, 'id_pertemuan', 'id');
     }
 }

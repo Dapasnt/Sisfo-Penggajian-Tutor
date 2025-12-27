@@ -1201,6 +1201,8 @@ table tr:hover .table-links {
 
 .modal-body {
   padding-top: 15px;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .modal-footer {

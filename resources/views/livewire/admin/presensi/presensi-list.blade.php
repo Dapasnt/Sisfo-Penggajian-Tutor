@@ -87,13 +87,13 @@
         </div>
     @endif
 
-    @if ($formAdd)
+    @if ($formAdd || $formRetake)
         <section class="section">
             <div class="section-header">
                 <div class="section-header-back">
                     <a wire:click="resetForm" class="btn btn-icon cursor-pointer"><i class="fas fa-arrow-left"></i></a>
                 </div>
-                <h1>Input Presensi</h1>
+                <h1>{{ $formAdd ? 'Tambah Presensi' : 'Retake Presensi' }}</h1>
             </div>
 
             <div class="section-body">
@@ -104,7 +104,13 @@
                                 <h4>Ambil Foto Selfie</h4>
                             </div>
                             <div class="card-body">
-                                <form wire:submit.prevent="store">
+                                <form wire:submit.prevent="{{ $formAdd ? 'store' : 'update' }}">
+
+                                    <div class="form-group {{ $formAdd ? 'd-none' : '' }}">
+                                        <label>Tanggal Pertemuan</label>
+                                        <input type="text" class="form-control" wire:model.defer="tgl_pertemuan" readonly>
+                                        @error('tgl_pertemuan') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
 
                                     @if(!Auth::check() || Auth::user()->role != 'tutor')
                                         <div class="form-group">
@@ -132,15 +138,33 @@
                                         @error('id_kelas') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
 
-                                    <div class="form-group text-center">
+                                    <div class="form-group">
+                                        <label>Jenjang</label>
+                                        <select class="form-control" wire:model.defer="id_jenjang">
+                                            <option value="">-- Pilih Jenjang --</option>
+                                            @foreach($daftarJenjang as $k)
+                                                <option value="{{ $k->id_jenjang }}">{{ $k->nama }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('id_jenjang') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Durasi</label>
+                                        <select class="form-control" wire:model.defer="id_durasi">
+                                            <option value="">-- Pilih Durasi Mengajar --</option>
+                                            @foreach($daftarDurasi as $k)
+                                                <option value="{{ $k->id_durasi }}">{{ $k->durasi }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('id_durasi') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
 
                                     <div class="form-group text-center">
                                         <label>Bukti Foto</label>
-
                                         <div wire:ignore>
                                             <video id="videoElement" autoplay playsinline
-                                                style="width: 100%; max-height: 400px; background: #000; border-radius: 8px;"></video>
+                                                style="width: 100%; max-height: 400px; border-radius: 8px;"></video>
                                         </div>
 
                                         @if($photo)
@@ -154,7 +178,6 @@
 
                                         @error('photo') <div class="text-danger mt-2">Wajib mengambil foto selfie!</div>
                                         @enderror
-
 
                                         <div class="mt-3">
                                             <button type="button" class="btn btn-warning" id="btnCameraAction">
@@ -174,12 +197,16 @@
                                     </div>
 
                                     <div class="form-group text-right">
-                                        <button wire:loading.remove wire:target="store" type="submit"
+                                        <button wire:loading.remove wire:target="store,update" type="submit"
                                             class="btn btn-primary btn-lg">
                                             Kirim Presensi
                                         </button>
-                                        <button wire:loading wire:target="store" class="btn btn-primary btn-lg disabled">
+                                        <button wire:loading wire:target="store,update"
+                                            class="btn btn-primary btn-lg disabled">
                                             Mengirim...
+                                        </button>
+                                        <button wire:click="resetForm" type="button"
+                                            class="btn btn-secondary btn-lg">Kembali
                                         </button>
                                     </div>
                                 </form>
@@ -191,7 +218,85 @@
         </section>
     @endif
 
-    @if (!$formAdd)
+    @if($formDetail && $detailData)
+        <section class="section">
+            <div class="section-header">
+                <div class="section-header-back">
+                    <a wire:click="resetForm" class="btn btn-icon cursor-pointer"><i class="fas fa-arrow-left"></i></a>
+                </div>
+                <h1>Detail Presensi</h1>
+            </div>
+
+            <div class="section-body">
+                <div class="row">
+                    <div class="col-12 col-md-8 offset-md-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Data Pertemuan</h4>
+                                <div class="card-header-action">
+                                    <span class="badge badge-{{ $detailData->status == 'Hadir' ? 'success' : 'warning' }}">
+                                        {{ $detailData->status }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>Waktu Presensi</label>
+                                    <h6>{{ \Carbon\Carbon::parse($detailData->created_at)->translatedFormat('l, d F Y - H:i') }}</h6>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Nama Tutor</label>
+                                    <h6>{{ $detailData->tutor->nama ?? 'Tutor Terhapus' }}</h6>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Kelas</label>
+                                    <h6>{{ $detailData->kelas->nama ?? $detailData->id_kelas }}</h6>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Durasi Mengajar</label>
+                                    <h6>{{ $detailData->durasi->durasi ?? $detailData->durasi->id }}</h6>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Jenjang</label>
+                                    <h6>{{ $detailData->jenjang->nama ?? $detailData->jenjang->id }}</h6>
+                                </div>
+
+                                <div class="form-group text-center">
+                                    <label class="d-block">Bukti Foto</label>
+                                    <div class="p-2 border rounded bg-light d-inline-block">
+                                        @if($detailData->bukti_foto)
+                                            <img src="{{ asset('storage/' . $detailData->bukti_foto) }}" 
+                                                 class="img-fluid rounded" 
+                                                 style="max-height: 400px; cursor: pointer"
+                                                 onclick="window.open(this.src)">
+                                        @else
+                                            <span class="text-muted">Tidak ada foto</span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Keterangan</label>
+                                    <textarea class="form-control" style="height: 100px" readonly>{{ $detailData->keterangan ?? '-' }}</textarea>
+                                </div>
+
+                                <div class="text-right">
+                                    <button wire:click="resetForm" class="btn btn-secondary">Kembali</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
+
+    @if (!$formAdd && !$formRetake && !$formDetail)
         <section class="section">
             <div class="section-header">
                 <h1>Riwayat Presensi</h1>
@@ -203,9 +308,13 @@
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h4>List Kehadiran</h4>
-                                <button wire:click="create" class="btn btn-primary rounded-lg">
-                                    <i class="fas fa-plus"></i> Presensi Baru
-                                </button>
+                                @if(!Auth::check() || Auth::user()->id_role != 8)
+                                    <div class="d-none"></div>
+                                @else
+                                    <button wire:click="create" class="btn btn-primary rounded-lg">
+                                        <i class="fas fa-plus"></i> Presensi Baru
+                                    </button>
+                                @endif
                             </div>
 
                             <div class="card-body">
@@ -233,9 +342,9 @@
                                                 <th class="text-center">Status</th>
                                                 <th class="text-center">
                                                     @if (!Auth::user()->tutor)
-                                                    Action
+                                                        Action
                                                     @else
-                                                    Detail
+                                                        Detail
                                                     @endif
                                                 </th>
                                             </tr>
@@ -255,33 +364,53 @@
                                                             style="height: 60px; object-fit: cover; cursor: pointer"
                                                             onclick="window.open(this.src)">
                                                     </td>
-                                                    <td>{{ $item->id_kelas }}</td>
-                                                    <td>{{ \Carbon\Carbon::parse($item->created_at)->format('d M Y, H:i') }}
+                                                    <td>{{ $item->kelas->nama }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($item->created_at)->translatedFormat('d M Y, H:i') }}
                                                     </td>
                                                     <td class="text-center">
                                                         @if($item->status == 'Pending')
-                                                        <div class="badge badge-warning">Pending</div>
+                                                            <div class="badge badge-warning">Pending</div>
                                                         @elseif($item->status == 'Hadir')
-                                                        <div class="badge badge-success">Hadir</div>
+                                                            <div class="badge badge-success">Hadir</div>
                                                         @elseif($item->status == 'Return')
-                                                        <div class="badge badge-danger">Return</div>
+                                                            <div class="badge badge-danger">Return</div>
                                                         @endif
                                                     </td>
                                                     <td class="text-center">
                                                         @if (!Auth::user()->tutor)
                                                             @if ($item->status == 'Pending')
-                                                            <div class="btn-group" role="group">
-                                                            <button class="btn btn-sm btn-warning"><i class="fas fa-eye"></i></button>
-                                                            <button wire:click="update_hadir('{{ $item->id }}')" class="btn btn-sm btn-success"><i class="fas fa-check"></i></button>
-                                                            <button wire:click="update_return('{{ $item->id }}')" class="btn btn-sm btn-danger"><i class="fas fa-xmark"></i></button>
-                                                            </div>
+                                                                <div class="btn-group" role="group">
+                                                                    <button wire:click="detail('{{ $item->id }}')"
+                                                                        class="btn btn-sm btn-warning">
+                                                                        <i class="fas fa-eye"></i>
+                                                                    </button>
+                                                                    <button wire:click="update_hadir('{{ $item->id }}')"
+                                                                        class="btn btn-sm btn-success">
+                                                                        <i class="fas fa-check"></i>
+                                                                    </button>
+                                                                    <button wire:click="update_return('{{ $item->id }}')"
+                                                                        class="btn btn-sm btn-danger">
+                                                                        <i class="fas fa-xmark"></i>
+                                                                    </button>
+                                                                </div>
                                                             @else
-                                                            <button class="btn btn-sm btn-warning"><i
-                                                                    class="fas fa-eye"></i></button>
-                                                            @endif        
+                                                                <button wire:click="detail('{{ $item->id }}')"
+                                                                    class="btn btn-sm btn-warning">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </button>
+                                                            @endif
                                                         @else
-                                                            <button class="btn btn-sm btn-warning"><i
-                                                                    class="fas fa-eye"></i></button>
+                                                            @if ($item->status == 'Return')
+                                                                <button wire:click="retake('{{ $item->id }}')"
+                                                                    class="btn btn-sm btn-warning">
+                                                                    <i class="fas fa-sync mr-1"></i>Retake
+                                                                </button>
+                                                            @else
+                                                                <button wire:click="detail('{{ $item->id }}')"
+                                                                    class="btn btn-sm btn-warning">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </button>
+                                                            @endif
                                                         @endif
                                                     </td>
                                                 </tr>

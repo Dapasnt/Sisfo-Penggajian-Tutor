@@ -1,22 +1,22 @@
 <?php
 
-namespace App\Livewire\Admin\Kelas;
+namespace App\Livewire\Admin\Program;
 
-use App\Models\Kelas;
+use App\Models\Jenjang;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-#[Title('GTC | List Kelas')]
+#[Title('GTC | List Jenjang')]
 
-class KelasView extends Component
+class JenjangList extends Component
 {
     use WithPagination;
 
     public $formAdd = false, $formEdit = false, $confirmingDelete = false;
     public $search = '';
-    public $id_kelas, $nama, $deskripsi, $tarif;
-    public $selectedIdKelas;
+    public $id_jenjang, $nama, $deskripsi, $tarif;
+    public $selectedIdJenjang;
 
     public function updatedSearch()
     {
@@ -24,72 +24,66 @@ class KelasView extends Component
     }
     public function render()
     {
-        $kelasList = Kelas::search($this->search)->paginate(10);
-        return view('livewire.admin.kelas.kelas-view', compact('kelasList'));
+        $jenjangList = Jenjang::search($this->search)->paginate(10);
+        return view('livewire.admin.program.jenjang-list', compact('jenjangList'));
     }
 
     public function add()
     {
         $this->validate([
-            'id_kelas' => 'required|string|max:255|unique:kelas,id_kelas',
-            'nama' => 'required|string|max:255|unique:kelas,nama',
+            'nama' => 'required|string|max:255|unique:jenjang,nama',
             'deskripsi' => 'nullable|string',
             'tarif' => 'required|integer',
         ], [
-            'id_kelas.required' => 'ID kelas wajib diisi.',
-            'nama.required' => 'Nama kelas wajib diisi.',
-            'tarif.required' => 'tarif kelas wajib diisi.',
+            'nama.required' => 'Nama jenjang wajib diisi.',
+            'tarif.required' => 'Tarif jenjang wajib diisi.',
         ]);
         try {
     
-            Kelas::create([
-                'id_kelas' => $this->id_kelas,
+            Jenjang::create([
                 'nama' => $this->nama,
                 'deskripsi' => $this->deskripsi,
                 'tarif' => $this->tarif,
             ]);
     
             $this->resetForm();
-            $this->dispatch('success-message', 'Kelas berhasil ditambahkan.');
+            $this->dispatch('success-message', 'Jenjang berhasil ditambahkan.');
         } catch (\Throwable $th) {
             $this->dispatch('failed-message', 'Terjadi kesalahan: ' . $th->getMessage());
         }
     }
 
-    public function edit($id_kelas)
+    public function edit($id_jenjang)
     {
         // dd($id);
         $this->formEdit = true;
-        $kelas = Kelas::findOrFail($id_kelas);
-        $this->id_kelas = $kelas->id_kelas;
-        $this->nama = $kelas->nama;
-        $this->deskripsi = $kelas->deskripsi;
-        $this->tarif = $kelas->tarif;
+        $jenjang = Jenjang::findOrFail($id_jenjang);
+        $this->id_jenjang = $jenjang->id;
+        $this->nama = $jenjang->nama;
+        $this->deskripsi = $jenjang->deskripsi;
+        $this->tarif = $jenjang->tarif;
     }
 
     public function update()
     {
         $this->validate([
-            'id_kelas' => 'required|string|max:255|unique:kelas,id_kelas,'. $this->id_kelas . ',id_kelas',
-            'nama' => 'required|string|max:255',
+            'nama' => 'required|string|max:255|unique:jenjang,nama,'. $this->nama . ',nama',
             'deskripsi' => 'nullable|string',
             'tarif' => 'required|integer',
         ], [
-            'id_kelas.required' => 'ID kelas wajib diisi.',
-            'nama.required' => 'Nama kelas wajib diisi.',
-            'tarif.required' => 'tarif kelas wajib diisi.',
+            'nama.required' => 'Nama jenjang wajib diisi.',
+            'tarif.required' => 'Tarif jenjang wajib diisi.',
         ]);
         try {
-            $kelas = Kelas::findOrFail($this->id_kelas);
-            $kelas->update([
-                'id_kelas' => $this->id_kelas,
+            $jenjang = Jenjang::findOrFail($this->id_jenjang);
+            $jenjang->update([
                 'nama' => $this->nama,
                 'deskripsi' => $this->deskripsi,
                 'tarif' => $this->tarif,
             ]);
     
             $this->resetForm();
-            $this->dispatch('success-message', 'Data Kelas berhasil diubah.');
+            $this->dispatch('success-message', 'Data jenjang berhasil diubah.');
         } catch (\Throwable $th) {
             $this->dispatch('failed-message', 'Terjadi kesalahan: ' . $th->getMessage());
         }
@@ -97,18 +91,18 @@ class KelasView extends Component
 
     public function confirmDelete($id)
     {
-        $this->selectedIdKelas = $id;
+        $this->selectedIdJenjang = $id;
         $this->confirmingDelete = true;
     }
 
     public function deleteConfirmed()
     {
         try {
-            $kelas = Kelas::findOrFail($this->selectedIdKelas);
-            $kelas->delete();
+            $jenjang = jenjang::findOrFail($this->selectedIdJenjang);
+            $jenjang->delete();
     
             $this->confirmingDelete = false;
-            $this->dispatch('success-message', 'Data Kelas berhasil dihapus.');
+            $this->dispatch('success-message', 'Data jenjang berhasil dihapus.');
         } catch (\Throwable $th) {
             $this->dispatch('failed-message', 'Terjadi kesalahan: ' . $th->getMessage());
         }
@@ -118,7 +112,7 @@ class KelasView extends Component
     {
         $this->formAdd = false;
         $this->formEdit = false;
-        $this->id_kelas = '';
+        $this->id_jenjang = '';
         $this->nama = '';
         $this->deskripsi = '';
         $this->tarif = '';

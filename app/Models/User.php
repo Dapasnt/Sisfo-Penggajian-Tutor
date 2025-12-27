@@ -58,23 +58,8 @@ class User extends Authenticatable
     }
 
     public function tutor()
-    {
-        
+    { 
         return $this->hasOne(Tutor::class, 'id_user', 'id');
     }
 
-    // public function pegawai()
-    // {
-    //     return $this->hasOne(Pegawai::class, 'user_id');
-    // }
-
-    // public function bidang()
-    // {
-    //     return $this->pegawai?->bidang;
-    // }
-
-    // public function jabatan()
-    // {
-    //     return $this->pegawai?->jabatan;
-    // }
 }

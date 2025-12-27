@@ -16,7 +16,7 @@ class UserList extends Component
     public $formAdd = false, $formEdit = false, $confirmingDelete = false;
     public $confirmingResetPassword = false;
     public $search = '';
-    public $id_user, $username, $password, $email, $id_role;
+    public $id_user, $username, $password, $email, $id_role, $is_active, $user;
     public $selectedUserId;
 
     // protected $paginationTheme = 'bootstrap';
@@ -27,7 +27,7 @@ class UserList extends Component
     }
     public function render()
     {
-        $userList = User::search($this->search)->orderBy('username')->paginate(10);
+        $userList = User::search($this->search)->orderBy('is_active', 'desc')->paginate(10);
         $roles = Role::orderBy('nama')->get();
         return view('livewire.admin.user.user-list', compact('userList', 'roles'));
     }
@@ -50,7 +50,8 @@ class UserList extends Component
                 'username' => $this->username,
                 'email' => $this->email,
                 'password' => bcrypt('12345678'),
-                'id_role' => $this->id_role
+                'id_role' => $this->id_role,
+                'is_active' => 1,
             ]);
 
             $this->resetForm();
@@ -101,20 +102,18 @@ class UserList extends Component
         }
     }
 
-    public function confirmDelete($id)
-    {
-        $this->selectedUserId = $id;
-        $this->confirmingDelete = true;
-    }
-
-    public function deleteConfirmed()
+    public function toggleStatus($id)
     {
         try {
-            $user = User::findOrFail($this->selecteduserId);
-            $user->delete();
+            $user = User::find($id);
 
-            $this->confirmingDelete = false;
-            $this->dispatch('success-message', 'Data Tutor berhasil dihapus.');
+            // Logika Saklar: Kalau 1 jadi 0, Kalau 0 jadi 1
+            $newStatus = $user->is_active == 1 ? 0 : 1;
+
+            $user->update(['is_active' => $newStatus]);
+
+            $statusText = $newStatus == 1 ? 'diaktifkan' : 'dinonaktifkan';
+            $this->dispatch('success-message', "User berhasil $statusText.");
         } catch (\Throwable $th) {
             $this->dispatch('failed-message', 'Terjadi kesalahan: ' . $th->getMessage());
         }

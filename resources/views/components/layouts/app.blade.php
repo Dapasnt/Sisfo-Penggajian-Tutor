@@ -31,7 +31,7 @@
 
     </div>
 
-    {{-- <x-layouts.logout-modal/> --}}
+    <x-layouts.logout-modal/>
 
   </div>
 

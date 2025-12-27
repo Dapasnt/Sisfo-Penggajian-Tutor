@@ -28,7 +28,8 @@ class Login extends Component
 
             $credentials = [
                 $usermail_type => $this->usermail,
-                'password' => $this->password
+                'password' => $this->password,
+                'is_active'    => 1
             ];
 
             if (Auth::attempt($credentials)) {

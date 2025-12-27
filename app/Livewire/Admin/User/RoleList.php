@@ -68,7 +68,7 @@ class RoleList extends Component
     public function update()
     {
         $this->validate([
-            'desc' => 'required|string|max:255|unique:roles,desc'. $this->role_id,
+            'desc' => 'required|string|max:255',
         ], [
             'desc.required' => 'Deskripsi wajib diisi.',
             'desc.unique' => 'Deskripsi sudah digunakan.',

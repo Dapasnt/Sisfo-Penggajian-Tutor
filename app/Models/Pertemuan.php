@@ -37,7 +37,18 @@ class Pertemuan extends Model
     }
 
     public function kelas() {
-        return $this->hasMany(Kelas::class);
+        // return $this->hasMany(Kelas::class);
+        return $this->belongsTo(Kelas::class, 'id_kelas', 'id_kelas');
+    }
+
+    public function jenjang() {
+        // return $this->hasMany(jenjang::class);
+        return $this->belongsTo(Jenjang::class, 'id_jenjang', 'id_jenjang');
+    }
+
+    public function durasi() {
+        // return $this->hasMany(durasi::class);
+        return $this->belongsTo(Durasi::class, 'id_durasi', 'id_durasi');
     }
 
     public function penggajian() {
