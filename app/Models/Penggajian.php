@@ -43,6 +43,7 @@ class Penggajian extends Model
         return $this->belongsTo(Jenjang::class, 'id_jenjang', 'id_jenjang');
     }
     public function pertemuan() {
-        return $this->belongsTo(Pertemuan::class, 'id_pertemuan', 'id');
+        // return $this->belongsTo(Pertemuan::class, 'id_pertemuan', 'id');
+        return $this->hasMany(Pertemuan::class, 'id_penggajian', 'id_penggajian');
     }
 }

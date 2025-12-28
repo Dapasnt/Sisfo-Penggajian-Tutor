@@ -204,7 +204,6 @@ class PresensiList extends Component
         }
     }
 
-    
     public function resetForm()
     {
         $this->dispatch('close-camera');

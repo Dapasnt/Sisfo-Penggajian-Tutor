@@ -61,7 +61,93 @@
         </section>
     @endif
 
-    @if(!$formTgl && !$showPreviewModal)
+    @if($formDetail && $detailData)
+        <section class="section">
+            <div class="section-header">
+                <div class="section-header-back">
+                    <a wire:click="resetForm" class="btn btn-icon cursor-pointer"><i class="fas fa-arrow-left"></i></a>
+                </div>
+                <h1>Detail Penggajian</h1>
+            </div>
+
+            <div class="section-body">
+                <div class="row">
+                    <div class="col-12 col-md-8 offset-md-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Data Pertemuan</h4>
+                            </div>
+                            <div class="card-header">
+                                <h6>Nama Tutor: {{ $detailData->tutor->nama ?? 'Tutor Dihapus' }}</h6>
+                            </div>
+                            
+
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered mb-0">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                {{-- <th class="text-center" width="5%">No</th> --}}
+                                                <th>Tgl Pertemuan</th>
+                                                <th class="text-center">Jenis Kelas yang diajar</th>
+                                                <th class="text-center">Jenjang</th>
+                                                <th class="text-center">Durasi Mengajar</th>
+                                                <th>Tarif Saat itu</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($detailData->pertemuan as $detail)
+                                                <tr>
+                                                    {{-- <td class="text-center">
+                                                        {{ $loop->iteration + ($detail->firstItem() - 1) }}
+                                                    </td> --}}
+
+                                                    <td>
+                                                        <div class="font-weight-bold">
+                                                            {{ \Carbon\Carbon::parse($detail->tgl_pertemuan)->translatedFormat('d-M-Y') }}
+                                                        </div>
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <span>{{ $detail->kelas->nama }}</span>
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <span>{{ $detail->jenjang->nama }}</span>
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <span>{{ $detail->durasi->durasi }} Menit</span>
+                                                    </td>
+
+                                                    <td class="font-weight-bold text-primary" style="font-size: 1.1em;">
+                                                        Rp {{ number_format($detail->tarif_saat_itu, 0, ',', '.') }}
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="4" class="text-right font-weight-bold text-primary">TOTAL GAJI</td>
+                                                <td class="font-weight-bold text-primary">Rp
+                                                    {{ number_format($detail->sum('tarif_saat_itu'), 0, ',', '.') }}</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+
+                                <div class="text-right">
+                                    <button wire:click="resetForm" class="btn btn-secondary">Kembali</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
+
+    @if(!$formTgl && !$showPreviewModal && !$formDetail)
         <section class="section">
             <div class="section-header">
                 <h1>Data Penggajian</h1>
@@ -170,6 +256,7 @@
                                                     <td class="text-center">
                                                         @if($item->status_pembayaran == 'Lunas')
                                                             <div class="badge badge-success">Lunas</div>
+                                                            <div class="text-danger">{{ Carbon\Carbon::parse($item->tgl_dibayar)->translatedFormat('d-M-Y') }}</div>
                                                         @else
                                                             <div class="badge badge-warning">Pending</div>
                                                         @endif
@@ -177,28 +264,16 @@
 
                                                     <td class="text-center">
                                                         <div class="btn-group">
-                                                            <button wire:click="showDetail({{ $item->id_penggajian }})"
-                                                                data-toggle="modal" data-target="#modalDetail"
+                                                            <button wire:click="detail({{ $item->id_penggajian }})" {{--
+                                                                data-toggle="modal" data-target="#modalDetail" --}}
                                                                 class="btn btn-sm btn-info" title="Lihat Rincian Absen">
                                                                 <i class="fas fa-eye"></i>
                                                             </button>
-
                                                             <button wire:click="previewSlip({{ $item->id_penggajian }})"
                                                                 class="btn btn-dark btn-sm" title="Cetak Slip">
                                                                 <i class="fas fa-print"></i>
                                                             </button>
-
-                                                            {{-- <a
-                                                                href="{{ route('admin.penggajian.cetak', $item->id_penggajian) }}"
-                                                                target="_blank" class="btn btn-danger btn-sm">
-                                                                <i class="fa fa-file-pdf"></i> Cetak PDF
-                                                            </a> --}}
-
-                                                            {{-- <button wire:click="edit({{ $item->id }})"
-                                                                class="btn btn-sm btn-warning" title="Edit Nominal">
-                                                                <i class="fas fa-pencil-alt"></i>
-                                                            </button>
-                                                        </div> --}}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             @empty

@@ -15,10 +15,10 @@ class PenggajianList extends Component
 {
 
     use WithPagination;
-    public $formTgl = false, $confirmingDelete = false, $showPreviewModal = false;
+    public $formTgl = false, $confirmingDelete = false, $showPreviewModal = false, $formDetail = false;
     public $search = '';
 
-    public $id_tutor, $nama, $bulan, $tahun, $jmlKelas, $selectedGaji;
+    public $id_tutor, $nama, $bulan, $tahun, $jmlKelas, $selectedGaji, $detailData;
 
     public function updatedSearch()
     {
@@ -59,7 +59,7 @@ class PenggajianList extends Component
                 $grouped = $listPertemuan->groupBy('id_tutor');
 
                 foreach ($grouped as $idTutor => $absenTutor) {
-                    // 1. Hitung Total Honor dan Jumlah Pertemuan
+                    //Hitung Total Honor dan Jumlah Pertemuan
                     $totalHonor = $absenTutor->sum('tarif_saat_itu');
                     $jumlahPertemuan = $absenTutor->count();
                     $totalDurasi = $absenTutor->sum(function ($item) {
@@ -92,10 +92,20 @@ class PenggajianList extends Component
         }
     }
 
-    public function resetForm()
+    public function detail($id)
     {
-        $this->formTgl = false;
-        $this->resetErrorBag();
+        $this->resetForm();
+        $this->detailData = Penggajian::with([
+            'tutor',
+            'pertemuan.tutor',
+            'pertemuan.kelas'
+            ])
+            ->find($id);
+
+        if($this->detailData) {
+            $this->formDetail = true; // Aktifkan Mode Detail
+            // dd($this->detailData);
+        }
     }
 
     public function previewSlip($id)
@@ -109,4 +119,13 @@ class PenggajianList extends Component
         $this->showPreviewModal = false;
         $this->selectedGaji = null;
     }
+    
+    public function resetForm()
+    {
+        $this->formTgl = false;
+        $this->formDetail = false;
+        $this->resetErrorBag();
+    }
+
+    
 }
