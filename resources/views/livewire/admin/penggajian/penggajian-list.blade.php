@@ -130,7 +130,7 @@
                                             <tr>
                                                 <td colspan="4" class="text-right font-weight-bold text-primary">TOTAL GAJI</td>
                                                 <td class="font-weight-bold text-primary">Rp
-                                                    {{ number_format($detail->sum('tarif_saat_itu'), 0, ',', '.') }}</td>
+                                                    {{ number_format($detailData->total_honor, 0, ',', '.') }}</td>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -272,6 +272,10 @@
                                                             <button wire:click="previewSlip({{ $item->id_penggajian }})"
                                                                 class="btn btn-dark btn-sm" title="Cetak Slip">
                                                                 <i class="fas fa-print"></i>
+                                                            </button>
+                                                            <button wire:click="bayarGaji({{ $item->id_penggajian }})"
+                                                                class="btn btn-dark btn-sm" title="Bayar Gaji">
+                                                                <i class="fas fa-dollar-sign"></i>
                                                             </button>
                                                         </div>
                                                     </td>

@@ -30,8 +30,6 @@
 
                 // 2. Pasang Event Listener pada Tombol Tunggal
                 btnAction.onclick = function () {
-                    // LOGIKA PENTING:
-                    // Cek apakah video sedang terlihat atau disembunyikan?
                     const isCapturing = video.style.display !== 'none';
 
                     if (isCapturing) {
@@ -39,31 +37,52 @@
                         console.log("Cekrek! Mengambil foto...");
 
                         let canvas = document.createElement('canvas');
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
+
+                        // 1. ATUR UKURAN MAKSIMAL (RESIZE)
+                        // Agar tidak terlalu besar, kita batasi misalnya lebar max 800px
+                        // Ini akan sangat mengurangi ukuran file tanpa merusak kualitas tampilan di HP
+                        const MAX_WIDTH = 800;
+                        const MAX_HEIGHT = 800;
+                        let width = video.videoWidth;
+                        let height = video.videoHeight;
+
+                        // Hitung aspek rasio baru
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+
+                        // Set ukuran canvas sesuai hasil resize
+                        canvas.width = width;
+                        canvas.height = height;
+
                         let context = canvas.getContext('2d');
-                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        let dataUrl = canvas.toDataURL('image/png');
+                        // Gambar video ke canvas dengan ukuran baru
+                        context.drawImage(video, 0, 0, width, height);
+
+                        // 2. GANTI FORMAT KE JPEG & TURUNKAN KUALITAS
+                        // image/jpeg lebih ringan untuk foto dibanding png
+                        // 0.7 artinya kualitas 70% (sudah cukup jelas untuk presensi)
+                        let dataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
                         // Kirim ke Livewire
                         @this.set('photo', dataUrl);
 
-                        // Sembunyikan video segera agar terlihat seperti "freeze"
+                        // Sembunyikan video
                         video.style.display = 'none';
 
-
-
                     } else {
-                        // --- MODE RETAKE (ULANGI) ---
+                        // ... kode mode retake sama seperti sebelumnya ...
                         console.log("Mengulangi foto...");
-
-                        // Kosongkan foto di Livewire
                         @this.set('photo', null);
-
-                        // Munculkan kembali video live stream
                         video.style.display = 'block';
-
-                        // CATATAN: Teks tombol akan kembali jadi "Ambil Foto" otomatis oleh Livewire.
                     }
                 };
 
@@ -239,11 +258,12 @@
                                     </span>
                                 </div>
                             </div>
-                            
+
                             <div class="card-body">
                                 <div class="form-group">
                                     <label>Waktu Presensi</label>
-                                    <h6>{{ \Carbon\Carbon::parse($detailData->created_at)->translatedFormat('l, d F Y - H:i') }}</h6>
+                                    <h6>{{ \Carbon\Carbon::parse($detailData->created_at)->translatedFormat('l, d F Y - H:i') }}
+                                    </h6>
                                 </div>
 
                                 <div class="form-group">
@@ -270,10 +290,9 @@
                                     <label class="d-block">Bukti Foto</label>
                                     <div class="p-2 border rounded bg-light d-inline-block">
                                         @if($detailData->bukti_foto)
-                                            <img src="{{ asset('storage/' . $detailData->bukti_foto) }}" 
-                                                 class="img-fluid rounded" 
-                                                 style="max-height: 400px; cursor: pointer"
-                                                 onclick="window.open(this.src)">
+                                            <img src="{{ asset('storage/' . $detailData->bukti_foto) }}"
+                                                class="img-fluid rounded" style="max-height: 400px; cursor: pointer"
+                                                onclick="window.open(this.src)">
                                         @else
                                             <span class="text-muted">Tidak ada foto</span>
                                         @endif
@@ -282,7 +301,8 @@
 
                                 <div class="form-group">
                                     <label>Keterangan</label>
-                                    <textarea class="form-control" style="height: 100px" readonly>{{ $detailData->keterangan ?? '-' }}</textarea>
+                                    <textarea class="form-control" style="height: 100px"
+                                        readonly>{{ $detailData->keterangan ?? '-' }}</textarea>
                                 </div>
 
                                 <div class="text-right">
@@ -359,10 +379,11 @@
                                                         <td>{{ $item->tutor->nama }}</td>
                                                     @endif
                                                     <td class="text-center">
-                                                        <img src="{{ asset('storage/' . $item->bukti_foto) }}" alt="Foto"
+                                                        {{-- <img src="{{ asset('storage/' . $item->bukti_foto) }}" alt="Foto"
                                                             width="60" class="box-shadow-light rounded mt-2"
                                                             style="height: 60px; object-fit: cover; cursor: pointer"
-                                                            onclick="window.open(this.src)">
+                                                            onclick="window.open(this.src)"> --}}
+                                                        <a href="{{ asset('storage/' . $item->bukti_foto) }}">Lihat Bukti Foto</a>
                                                     </td>
                                                     <td>{{ $item->kelas->nama }}</td>
                                                     <td>{{ \Carbon\Carbon::parse($item->created_at)->translatedFormat('d M Y, H:i') }}

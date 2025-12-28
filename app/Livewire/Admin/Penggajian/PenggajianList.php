@@ -6,9 +6,14 @@ use App\Models\Penggajian;
 use App\Models\Pertemuan;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Xendit\Configuration;
+use Xendit\Disbursement\DisbursementApi;
+use Xendit\Disbursement\CreateDisbursementRequest;
+use Illuminate\Support\Str;
 
 #[Title('GTC | Penggajian')]
 class PenggajianList extends Component
@@ -99,10 +104,10 @@ class PenggajianList extends Component
             'tutor',
             'pertemuan.tutor',
             'pertemuan.kelas'
-            ])
+        ])
             ->find($id);
 
-        if($this->detailData) {
+        if ($this->detailData) {
             $this->formDetail = true; // Aktifkan Mode Detail
             // dd($this->detailData);
         }
@@ -119,13 +124,73 @@ class PenggajianList extends Component
         $this->showPreviewModal = false;
         $this->selectedGaji = null;
     }
-    
+
+    public function bayarGaji($idPenggajian)
+    {
+        // 1. Ambil Data
+        $gaji = Penggajian::with('tutor')->find($idPenggajian);
+
+        // Validasi sederhana
+        if (!$gaji || $gaji->status_transfer == 'COMPLETED') {
+            session()->flash('error', 'Gaji tidak valid.');
+            return;
+        }
+
+        // 2. Siapkan Data Request
+        $secretKey = env('XENDIT_SECRET_KEY');
+        $external_id = 'GAJI-' . $gaji->id . '-' . time(); // ID Unik Transaksi
+
+        // 3. Kirim Request Langsung ke API Xendit
+        // Kita gunakan Endpoint "/disbursements" (Standard)
+        $response = Http::withBasicAuth($secretKey, '') // Username=Key, Password=Kosong
+            ->withHeaders([
+                'Content-Type' => 'application/json',
+                'X-IDEMPOTENCY-KEY' => $external_id // Mencegah double transfer
+            ])
+            ->post('https://api.xendit.co/disbursements', [
+                'external_id' => $external_id,
+                'amount' => (int) $gaji->total_honor,
+                'bank_code' => $gaji->tutor->bank_code,
+                'account_holder_name' => $gaji->tutor->account_holder_name,
+                'account_number' => $gaji->tutor->account_number,
+                'description' => 'Gaji Tutor Periode ' . $gaji->periode_bulan . '/' . $gaji->periode_tahun,
+            ]);
+
+        // 4. Cek Hasilnya
+        if ($response->successful()) {
+            $data = $response->json();
+
+            // Simpan respons sukses ke database
+            $gaji->update([
+                'xendit_id' => $data['id'],
+                'xendit_external_id' => $external_id,
+                'status_transfer' => $data['status'], // Biasanya 'PENDING'
+                'status_pembayaran' => 'Pending'
+            ]);
+
+            session()->flash('success', 'Berhasil! Transfer sedang diproses bank.');
+        } else {
+            // Jika Gagal (Misal: Saldo kurang, Bank Code salah)
+            // $errorData = $response->json();
+            // $pesanError = $errorData['message'] ?? 'Gagal menghubungi Xendit';
+
+            // // Simpan info error jika perlu
+            // $gaji->update(['failure_code' => $errorData['code'] ?? 'ERROR']);
+
+            // session()->flash('error', 'Gagal Transfer: ' . $pesanError);
+
+            dd([
+                'Status Code' => $response->status(),
+                'Body' => $response->body(), // Ini pesan lengkap dari Xendit
+                'JSON' => $response->json()
+            ]);
+        }
+    }
+
     public function resetForm()
     {
         $this->formTgl = false;
         $this->formDetail = false;
         $this->resetErrorBag();
     }
-
-    
 }
