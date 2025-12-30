@@ -38,6 +38,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/pertemuan/list', \App\Livewire\Admin\Pertemuan\PertemuanList::class)->name('pertemuan.list');
 
     Route::get('/dashboard', \App\Livewire\Admin\Dashboard\Dashboard::class)->name('dashboard');
+    Route::get('/tutor/dashboard', \App\Livewire\Admin\Dashboard\TutorDashboard::class)->name('tutor.dashboard');
 
     Route::get('/presensi/list', \App\Livewire\Admin\Presensi\Presensilist::class)->name('presensi.list');
     Route::get('/laporan/laporan-gaji', \App\Livewire\Admin\Laporan\LaporanGaji::class)->name('laporan.laporan-gaji');

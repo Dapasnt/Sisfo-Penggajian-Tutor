@@ -24,6 +24,8 @@ class Penggajian extends Model
                 ->orWhere('total_pertemuan', 'LIKE', '%' . $keyword . '%')
                 ->orWhere('gaji_dibayar', 'LIKE', '%' . $keyword . '%')
                 ->orWhere('status_pembayaran', 'LIKE', '%' . $keyword . '%')
+                ->orWhere('xendit_external_id', 'LIKE', '%' . $keyword . '%')
+                ->orWhere('batch_id', 'LIKE', '%' . $keyword . '%')
                 ->orWhereHas('tutor', function ($tq) use ($keyword) {
                     $tq->where('nama', 'like', '%' . $keyword . '%');
                 });

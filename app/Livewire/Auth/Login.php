@@ -34,7 +34,11 @@ class Login extends Component
 
             if (Auth::attempt($credentials)) {
                 session()->regenerate();
-                return $this->redirect(route('admin.dashboard'));
+                if (Auth::user()->role->nama == 'tutor') {
+                    return $this->redirect(route('admin.tutor.dashboard'));
+                }else{
+                    return $this->redirect(route('admin.dashboard'));
+                }
             } else {
                 $this->dispatch('failed-message', 'Akun tidak ditemukan atau password salah.');
                 // $this->dispatchBrowserEvent('failed-message', ['message' => 'Terjadi kesalahan: ' . $th->getMessage()]);

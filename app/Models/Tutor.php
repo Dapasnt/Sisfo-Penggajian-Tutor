@@ -19,7 +19,11 @@ class Tutor extends Model
             $q->where('nama', 'LIKE', '%' . $keyword . '%')
                 ->orWhere('mapel', 'LIKE', '%' . $keyword . '%')
                 ->orWhere('no_hp', 'LIKE', '%' . $keyword . '%')
-                ->orWhere('jns_kel', 'LIKE', '%' . $keyword . '%');
+                ->orWhere('jns_kel', 'LIKE', '%' . $keyword . '%')
+                ->orWhere('bank_code', 'LIKE', '%' . $keyword . '%')
+                ->orWhere('account_number', 'LIKE', '%' . $keyword . '%')
+                ->orWhere('account_holder_name', 'LIKE', '%' . $keyword . '%')
+                ;
         });
     }
 

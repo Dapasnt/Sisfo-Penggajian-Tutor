@@ -16,7 +16,7 @@ class TutorList extends Component
 
     public $formAdd = false, $formEdit = false, $confirmingDelete = false;
     public $search = '';
-    public $id_tutor, $nama, $mapel, $jns_kel, $no_hp, $email, $username;
+    public $id_tutor, $nama, $mapel, $jns_kel, $no_hp, $email, $username, $account_number, $bank_code, $account_holder_name;
     public $selectedTutorId;
 
     // protected $paginationTheme = 'bootstrap';
@@ -39,6 +39,9 @@ class TutorList extends Component
             'mapel' => 'required',
             'jns_kel' => 'required|string',
             'no_hp' => 'required',
+            'bank_code' => 'required',
+            'account_number' => 'required',
+            'account_holder_name' => 'required',
             'username' => 'required|unique:users,username',
             'email'    => 'required|email|unique:users,email',
         ], [
@@ -46,6 +49,9 @@ class TutorList extends Component
             'mapel.required' => 'Mata pelajaran wajib diisi.',
             'jns_kel.required' => 'Jenis kelamin wajib diisi.',
             'no_hp.required' => 'Nomor hp wajib diisi.',
+            'bank_code.required' => 'Bank wajib diisi.',
+            'account_number.required' => 'Nomor rekening wajib diisi.',
+            'accound_holder_name.required' => 'Nama pemegang rekening wajib diisi.',
             'email'    => 'Email wajib diisi dan harus format email yang valid.',
             'username' => 'Username wajib diisi dan harus unik.',
         ]);
@@ -62,10 +68,13 @@ class TutorList extends Component
                     'nama' => $this->nama,
                     'mapel' => $this->mapel,
                     'jns_kel' => $this->jns_kel,
-                    'no_hp' => $this->no_hp
+                    'no_hp' => $this->no_hp,
+                    'bank_code' => $this->bank_code,
+                    'account_number' => $this->account_number,
+                    'account_holder_name' => $this->account_holder_name,
                 ]);
             });
-    
+
             $this->resetForm();
             $this->dispatch('success-message', 'Tutor berhasil ditambahkan.');
         } catch (\Throwable $th) {
@@ -82,6 +91,9 @@ class TutorList extends Component
         $this->mapel = $tutor->mapel;
         $this->jns_kel = $tutor->jns_kel;
         $this->no_hp = $tutor->no_hp;
+        $this->account_number = $tutor->account_number;
+        $this->account_holder_name = $tutor->account_holder_name;
+        $this->bank_code = $tutor->bank_code;
         $this->email = $tutor->user->email;
         $this->username = $tutor->user->username;
     }
@@ -95,6 +107,9 @@ class TutorList extends Component
             'mapel' => 'required',
             'jns_kel' => 'required|string',
             'no_hp' => 'required',
+            'bank_code' => 'required',
+            'account_number' => 'required',
+            'account_holder_name' => 'required',
             // Validasi User (Ignore ID user saat ini agar bisa simpan tanpa ganti email/username)
             'username' => 'required|string|unique:users,username,' . $userId,
             'email' => 'required|email|unique:users,email,' . $userId,
@@ -103,6 +118,9 @@ class TutorList extends Component
             'mapel.required' => 'Mata pelajaran wajib diisi.',
             'jns_kel.required' => 'Jenis kelamin wajib diisi.',
             'no_hp.required' => 'Nomor hp wajib diisi.',
+            'bank_code.required' => 'Bank wajib diisi.',
+            'account_number.required' => 'Nomor rekening wajib diisi.',
+            'accound_holder_name.required' => 'Nama pemegang rekening wajib diisi.',
             'username.required' => 'Username wajib diisi.',
             'username.unique' => 'Username sudah digunakan.',
             'email.required' => 'Email wajib diisi.',
@@ -110,26 +128,29 @@ class TutorList extends Component
             'email.email' => 'Format email tidak valid.',
         ]);
         try {
-        // 3. Gunakan Transaction untuk update 2 tabel
-        DB::transaction(function () use ($tutor) {
-            
-            // Update Tabel Tutor
-            $tutor->update([
-                'nama' => $this->nama,
-                'mapel' => $this->mapel,
-                'jns_kel' => $this->jns_kel,
-                'no_hp' => $this->no_hp
-            ]);
+            // 3. Gunakan Transaction untuk update 2 tabel
+            DB::transaction(function () use ($tutor) {
 
-            // Update Tabel User (melalui relasi)
-            if ($tutor->user) {
-                $tutor->user->update([
-                    'username' => $this->username,
-                    'email' => $this->email,
+                // Update Tabel Tutor
+                $tutor->update([
+                    'nama' => $this->nama,
+                    'mapel' => $this->mapel,
+                    'jns_kel' => $this->jns_kel,
+                    'no_hp' => $this->no_hp,
+                    'bank_code' => $this->bank_code,
+                    'account_number' => $this->account_number,
+                    'account_holder_name' => $this->account_holder_name,
                 ]);
-            }
-        });
-    
+
+                // Update Tabel User (melalui relasi)
+                if ($tutor->user) {
+                    $tutor->user->update([
+                        'username' => $this->username,
+                        'email' => $this->email,
+                    ]);
+                }
+            });
+
             $this->resetForm();
             $this->dispatch('success-message', 'Data Tutor berhasil diubah.');
         } catch (\Throwable $th) {
@@ -148,7 +169,7 @@ class TutorList extends Component
         try {
             $tutor = Tutor::findOrFail($this->selectedTutorId);
             $tutor->delete();
-    
+
             $this->confirmingDelete = false;
             $this->dispatch('success-message', 'Data Tutor berhasil dihapus.');
         } catch (\Throwable $th) {
@@ -165,6 +186,9 @@ class TutorList extends Component
         $this->mapel = '';
         $this->jns_kel = '';
         $this->no_hp = '';
+        $this->account_holder_name = '';
+        $this->account_number = '';
+        $this->bank_code = '';
         $this->resetErrorBag();
     }
 }

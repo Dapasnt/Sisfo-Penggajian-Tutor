@@ -80,7 +80,7 @@
                             <div class="card-header">
                                 <h6>Nama Tutor: {{ $detailData->tutor->nama ?? 'Tutor Dihapus' }}</h6>
                             </div>
-                            
+
 
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -128,9 +128,10 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td colspan="4" class="text-right font-weight-bold text-primary">TOTAL GAJI</td>
-                                                <td class="font-weight-bold text-primary">Rp
-                                                    {{ number_format($detailData->total_honor, 0, ',', '.') }}</td>
+                                                <td colspan="4" class="text-right font-weight-bold text-primary">TOTAL GAJI
+                                                </td>
+                                                <td class="font-weight-bold text-primary">
+                                                    Rp{{ number_format($detailData->total_honor, 0, ',', '.') }}</td>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -254,30 +255,26 @@
                                                     </td>
 
                                                     <td class="text-center">
-                                                        @if($item->status_pembayaran == 'Lunas')
-                                                            <div class="badge badge-success">Lunas</div>
-                                                            <div class="text-danger">{{ Carbon\Carbon::parse($item->tgl_dibayar)->translatedFormat('d-M-Y') }}</div>
+                                                        @if($item->status_pembayaran == 'LUNAS')
+                                                            <div class="badge badge-success">LUNAS</div>
                                                         @else
-                                                            <div class="badge badge-warning">Pending</div>
+                                                            <div class="badge badge-warning">PENDING</div>
                                                         @endif
                                                     </td>
 
                                                     <td class="text-center">
-                                                        <div class="btn-group">
-                                                            <button wire:click="detail({{ $item->id_penggajian }})" {{--
-                                                                data-toggle="modal" data-target="#modalDetail" --}}
-                                                                class="btn btn-sm btn-info" title="Lihat Rincian Absen">
-                                                                <i class="fas fa-eye"></i>
-                                                            </button>
-                                                            <button wire:click="previewSlip({{ $item->id_penggajian }})"
-                                                                class="btn btn-dark btn-sm" title="Cetak Slip">
-                                                                <i class="fas fa-print"></i>
-                                                            </button>
-                                                            <button wire:click="bayarGaji({{ $item->id_penggajian }})"
-                                                                class="btn btn-dark btn-sm" title="Bayar Gaji">
-                                                                <i class="fas fa-dollar-sign"></i>
-                                                            </button>
-                                                        </div>
+                                                        <button wire:click="detail({{ $item->id_penggajian }})"
+                                                            class="btn btn-sm btn-info m-1" title="Lihat Rincian Absen">
+                                                            <i class="fas fa-info"></i>
+                                                        </button>
+                                                        <button wire:click="previewSlip({{ $item->id_penggajian }})"
+                                                            class="btn btn-success btn-sm m-1" title="Cetak Slip">
+                                                            <i class="fas fa-print"></i>
+                                                        </button>
+                                                        <button wire:click="bayarGaji({{ $item->id_penggajian }})"
+                                                            class="btn btn-dark btn-sm m-1" title="Bayar Gaji">
+                                                            <i class="fas fa-dollar-sign"></i>
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             @empty
@@ -306,6 +303,21 @@
                     </div>
                 </div>
             </div>
+            @if ($penggajianList->contains('status_pembayaran', '!=', 'LUNAS'))
+                <div class="section-body">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>Pembayaran Gaji Periode {{ $bulan }} - {{ $tahun }}</h5>
+                            <h6>Total Tutor: {{ $totalTutor }} | Total Nominal: Rp {{ number_format($totalNominal) }}</h6>
+                            <button wire:click="bayarSemua"
+                                wire:confirm="Yakin ingin mentransfer gaji ke SEMUA tutor sekaligus?"
+                                class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane"></i> Bayar Serentak (Batch)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </section>
     @endif
 
@@ -361,7 +373,7 @@
                             </div>
 
                             <div class="mb-12">
-                                <table class="w-full border border-black text-sm">
+                                {{-- <table class="w-full border border-black text-sm">
                                     <thead>
                                         <tr class="bg-gray-200">
                                             <th class="border border-black px-3 py-2 text-left font-bold w-3/4">Keterangan
@@ -398,6 +410,41 @@
                                             </td>
                                         </tr>
                                     </tbody>
+                                </table> --}}
+
+                                <table class="table-rincian">
+                                    <thead>
+                                        <tr style="background-color: #f0f0f0;">
+                                            <th>Jenis Kelas</th>
+                                            <th>Jenjang</th>
+                                            <th>Durasi (menit)</th>
+                                            <th>Gaji per Pertemuan</th>
+                                            <th>Jml Pertemuan</th>
+                                            <th>Total Gaji</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($rincianGaji as $row)
+                                            <tr>
+                                                <td class="text-left">{{ $row['jenis_kelas'] }}</td>
+                                                <td>{{ $row['jenjang'] }}</td>
+                                                <td>{{ $row['durasi'] }}</td>
+                                                <td>Rp {{ number_format($row['tarif'], 0, ',', '.') }}</td>
+                                                <td>{{ $row['jumlah_pertemuan'] }}</td>
+                                                <td class="text-right">Rp {{ number_format($row['subtotal'], 0, ',', '.') }}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="4" style="font-weight: bold; text-align: right;">Total Honor
+                                                Mengajar</td>
+                                            <td style="font-weight: bold; text-align: right;">
+                                                Rp {{ number_format($selectedGaji->total_honor, 0, ',', '.') }}
+                                            </td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
 

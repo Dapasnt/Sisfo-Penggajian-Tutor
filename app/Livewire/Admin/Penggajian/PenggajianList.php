@@ -7,6 +7,7 @@ use App\Models\Pertemuan;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -14,6 +15,8 @@ use Xendit\Configuration;
 use Xendit\Disbursement\DisbursementApi;
 use Xendit\Disbursement\CreateDisbursementRequest;
 use Illuminate\Support\Str;
+use Xendit\Payout\CreatePayoutRequest;
+use Xendit\Payout\PayoutApi;
 
 #[Title('GTC | Penggajian')]
 class PenggajianList extends Component
@@ -23,7 +26,7 @@ class PenggajianList extends Component
     public $formTgl = false, $confirmingDelete = false, $showPreviewModal = false, $formDetail = false;
     public $search = '';
 
-    public $id_tutor, $nama, $bulan, $tahun, $jmlKelas, $selectedGaji, $detailData;
+    public $id_tutor, $nama, $bulan, $tahun, $jmlKelas, $selectedGaji, $detailData, $rincianGaji;
 
     public function updatedSearch()
     {
@@ -41,7 +44,10 @@ class PenggajianList extends Component
             ->where('periode_tahun', $this->tahun)
             ->search($this->search)
             ->paginate(10);
-        return view('livewire.admin.penggajian.penggajian-list', compact('penggajianList'));
+
+        $totalTutor = $penggajianList->where('status_pembayaran', 'PENDING')->count();
+        $totalNominal = $penggajianList->where('status_pembayaran', 'PENDING')->sum('total_honor');
+        return view('livewire.admin.penggajian.penggajian-list', compact('penggajianList', 'totalTutor', 'totalNominal'));
     }
 
     public function generate()
@@ -116,6 +122,39 @@ class PenggajianList extends Component
     public function previewSlip($id)
     {
         $this->selectedGaji = Penggajian::with('tutor')->find($id);
+
+        // Added this 30 des/ 11:17
+        $riwayatMengajar = Pertemuan::with(['kelas', 'jenjang', 'durasi'])
+            ->where('id_tutor', $this->selectedGaji->id_tutor)
+            ->whereMonth('tgl_pertemuan', $this->selectedGaji->periode_bulan) // Sesuaikan nama kolom tgl_pertemuan kamu
+            ->whereYear('tgl_pertemuan', $this->selectedGaji->periode_tahun)
+            ->get();
+
+        // 2. Lakukan GROUPING (Pengelompokan)
+        // Kita kelompokkan berdasarkan "Tingkat" dan "Durasi" agar mirip gambar
+        $this->rincianGaji = $riwayatMengajar->groupBy(function ($item) {
+            // KITA GABUNGKAN 3 KOLOM JADI SATU KEY UNIK
+            // Contoh hasil key: "Private Class-SD-90"
+            return $item->jenis_kelas . '-' . $item->jenjang . '-' . $item->durasi;
+        })->map(function ($group) {
+            // Ambil satu data sampel dari grup untuk ambil info nama/labelnya
+            $contoh = $group->first();
+
+            return [
+                // Pastikan nama properti ini ('jenis_kelas', 'jenjang') SAMA dengan nama kolom di database kamu
+                'jenis_kelas' => $contoh->kelas->nama,
+                'jenjang'     => $contoh->jenjang->nama,
+                'durasi'      => $contoh->durasi->durasi,
+
+                // Hitung-hitungan
+                'tarif'            => $contoh->tarif_saat_itu,
+                'jumlah_pertemuan' => $group->count(),
+                'subtotal'         => $group->sum('tarif_saat_itu')
+            ];
+        })->values();
+        // to this
+
+
         $this->showPreviewModal = true;
     }
 
@@ -127,22 +166,18 @@ class PenggajianList extends Component
 
     public function bayarGaji($idPenggajian)
     {
-        // 1. Ambil Data
+
         $gaji = Penggajian::with('tutor')->find($idPenggajian);
 
-        // Validasi sederhana
         if (!$gaji || $gaji->status_transfer == 'COMPLETED') {
             session()->flash('error', 'Gaji tidak valid.');
             return;
         }
 
-        // 2. Siapkan Data Request
         $secretKey = env('XENDIT_SECRET_KEY');
-        $external_id = 'GAJI-' . $gaji->id . '-' . time(); // ID Unik Transaksi
+        $external_id = 'GAJI-' . $gaji->id_penggajian . '-' . time();
 
-        // 3. Kirim Request Langsung ke API Xendit
-        // Kita gunakan Endpoint "/disbursements" (Standard)
-        $response = Http::withBasicAuth($secretKey, '') // Username=Key, Password=Kosong
+        $response = Http::withBasicAuth($secretKey, '')
             ->withHeaders([
                 'Content-Type' => 'application/json',
                 'X-IDEMPOTENCY-KEY' => $external_id // Mencegah double transfer
@@ -156,7 +191,7 @@ class PenggajianList extends Component
                 'description' => 'Gaji Tutor Periode ' . $gaji->periode_bulan . '/' . $gaji->periode_tahun,
             ]);
 
-        // 4. Cek Hasilnya
+        //Cek hasil
         if ($response->successful()) {
             $data = $response->json();
 
@@ -164,27 +199,187 @@ class PenggajianList extends Component
             $gaji->update([
                 'xendit_id' => $data['id'],
                 'xendit_external_id' => $external_id,
-                'status_transfer' => $data['status'], // Biasanya 'PENDING'
-                'status_pembayaran' => 'Pending'
+                'status_transfer' => $data['status'],
+                'status_pembayaran' => 'PENDING'
             ]);
 
             session()->flash('success', 'Berhasil! Transfer sedang diproses bank.');
         } else {
             // Jika Gagal (Misal: Saldo kurang, Bank Code salah)
-            // $errorData = $response->json();
-            // $pesanError = $errorData['message'] ?? 'Gagal menghubungi Xendit';
+            $errorData = $response->json();
+            $pesanError = $errorData['message'] ?? 'Gagal menghubungi Xendit';
 
-            // // Simpan info error jika perlu
-            // $gaji->update(['failure_code' => $errorData['code'] ?? 'ERROR']);
+            // Simpan info error jika perlu
+            $gaji->update(['failure_code' => $errorData['code'] ?? 'ERROR']);
 
-            // session()->flash('error', 'Gagal Transfer: ' . $pesanError);
+            session()->flash('error', 'Gagal Transfer: ' . $pesanError);
 
-            dd([
-                'Status Code' => $response->status(),
-                'Body' => $response->body(), // Ini pesan lengkap dari Xendit
-                'JSON' => $response->json()
-            ]);
+            // dd([
+            //     'Status Code' => $response->status(),
+            //     'Body' => $response->body(), // Ini pesan lengkap dari Xendit
+            //     'JSON' => $response->json()
+            // ]);
         }
+    }
+
+    // INI ADALAH KODINGAN BAYAR SEMUA YANG WORKS!!!!
+    // public function bayarSemua()
+    // {
+    //     // 1. Ambil Data Gaji yang Belum Dibayar
+    //     $listGaji = Penggajian::with('tutor')
+    //         ->where('periode_bulan', $this->bulan)
+    //         ->where('periode_tahun', $this->tahun)
+    //         ->where('status_pembayaran', '=', 'PENDING')
+    //         ->get();
+
+    //     if ($listGaji->isEmpty()) {
+    //         session()->flash('error', 'Tidak ada gaji yang perlu dibayar.');
+    //         return;
+    //     }
+
+    //     // 2. Validasi & Susun Data untuk Xendit
+    //     $disbursements = [];
+    //     $totalAmount = 0;
+
+    //     // Array sementara untuk menampung ID yang kita buat, agar bisa disimpan nanti
+    //     $mappedExternalIds = [];
+
+    //     foreach ($listGaji as $gaji) {
+    //         // Cek Kelengkapan Bank
+    //         if (empty($gaji->tutor->bank_code) || empty($gaji->tutor->account_number)) {
+    //             session()->flash('error', 'Gagal: Tutor ' . $gaji->tutor->nama . ' belum punya data bank!');
+    //             return;
+    //         }
+
+    //         // --- PERUBAHAN PENTING DI SINI ---
+    //         // Kita simpan ID-nya ke variabel dulu, supaya konsisten
+    //         $uniqueExternalId = 'GAJI-' . $gaji->id_penggajian . '-' . time();
+
+    //         // Simpan ke array mapping (Kunci: ID Penggajian, Nilai: External ID Xendit)
+    //         $mappedExternalIds[$gaji->id_penggajian] = $uniqueExternalId;
+
+    //         // Masukkan ke keranjang Xendit
+    //         $disbursements[] = [
+    //             'external_id' => $uniqueExternalId, // Pakai variabel yang sudah dibuat
+    //             'amount' => (int) $gaji->total_honor,
+    //             'bank_code' => $gaji->tutor->bank_code,
+    //             'bank_account_name' => $gaji->tutor->account_holder_name,
+    //             'bank_account_number' => $gaji->tutor->account_number,
+    //             'description' => 'Gaji Tutor ' . $gaji->tutor->nama
+    //         ];
+
+    //         $totalAmount += $gaji->total_honor;
+    //     }
+
+    //     // 3. Buat Batch ID
+    //     $batchExternalId = 'BATCH-GAJI-' . $this->bulan . '-' . $this->tahun . '-' . time();
+
+    //     // 4. Kirim ke Xendit
+    //     $secretKey = env('XENDIT_SECRET_KEY');
+
+    //     $response = Http::withBasicAuth($secretKey, '')
+    //         ->post('https://api.xendit.co/batch_disbursements', [
+    //             'reference' => $batchExternalId,
+    //             'disbursements' => $disbursements
+    //         ]);
+
+    //     // 5. Cek Hasil
+    //     if ($response->successful()) {
+    //         $data = $response->json();
+
+    //         // Update database
+    //         foreach ($listGaji as $gaji) {
+    //             // Ambil ID unik yang tadi kita buat untuk gaji ini
+    //             $myExternalId = $mappedExternalIds[$gaji->id_penggajian];
+
+    //             $gaji->update([
+    //                 'batch_id' => $data['id'],
+    //                 // 'status_pembayaran' => 'Proses Batch',
+    //                 'status_transfer' => 'PENDING', // Set pending dulu
+
+    //                 // --- INI WAJIB DISIMPAN AGAR WEBHOOK JALAN ---
+    //                 'xendit_external_id' => $myExternalId
+    //             ]);
+    //         }
+
+    //         session()->flash('success', 'Berhasil! ' . count($disbursements) . ' gaji sedang diproses Xendit.');
+    //     } else {
+    //         dd($response->json());
+    //         // session()->flash('error', 'Gagal membuat batch: ' . $response->body());
+    //     }
+    // }
+    // INI ADALAH KODINGAN BAYAR SEMUA YANG WORKS!!!!
+
+
+    public function bayarSemua()
+    {
+        // Set API Key
+        Configuration::setXenditKey(env('XENDIT_SECRET_KEY'));
+
+        // Instance API
+        $apiInstance = new PayoutApi();
+
+        $listPending = Penggajian::where('status_pembayaran', 'PENDING')
+            ->with('tutor')
+            ->get();
+
+        if ($listPending->isEmpty()) {
+            session()->flash('error', 'Tidak ada antrian gaji pending.');
+            return;
+        }
+
+        $sukses = 0;
+        $gagal = 0;
+
+        foreach ($listPending as $gaji) {
+            try {
+                // 1. Format Kode Bank (Wajib 'ID_BANK' di Payout V3 / SDK v7)
+                // Contoh: 'BCA' -> 'ID_BCA'
+                $rawBank = strtoupper(trim($gaji->tutor->bank_code));
+                $channelCode = str_starts_with($rawBank, 'ID_') ? $rawBank : 'ID_' . $rawBank;
+
+                // 2. Siapkan Object Request (WAJIB OBJECT)
+                $payoutRequest = new CreatePayoutRequest([
+                    'reference_id' => 'GAJI-' . $gaji->id_penggajian . '-' . time(),
+                    'currency'     => 'IDR',
+                    'channel_code' => $channelCode,
+                    'channel_category' => 'BANK',
+                    'channel_properties' => [
+                        'account_holder_name' => $gaji->tutor->account_holder_name,
+                        'account_number'      => $gaji->tutor->account_number,
+                    ],
+                    'amount'       => (float) $gaji->total_honor, // SDK v7 minta float/int
+                    'description'  => 'Gaji Periode ' . (string) $gaji->periode_bulan,
+                    'type'         => 'DIRECT_DISBURSEMENT'
+                ]);
+
+                // 3. Idempotency Key
+                $idempotencyKey = 'payout-' . $gaji->id_penggajian . '-' . time();
+
+                // 4. Eksekusi (Perhatikan urutan parameter v7)
+                // ($idempotency_key, $for_user_id, $create_payout_request)
+                $result = $apiInstance->createPayout($idempotencyKey, null, $payoutRequest);
+
+                // 5. Simpan Hasil
+                $gaji->update([
+                    'status_pembayaran' => 'PROSES',
+                    'xendit_id'         => $result->getId(),
+                    'xendit_external_id' => $result->getReferenceId(),
+                ]);
+
+                $sukses++;
+            } catch (\Xendit\XenditSdkException $e) {
+                $gagal++;
+                // Log Error Lengkap dari Xendit
+                Log::error("Xendit Error ID {$gaji->id_penggajian}: " . json_encode($e->getFullError()));
+            } catch (\Exception $e) {
+                $gagal++;
+                // Log Error System
+                Log::error("System Error ID {$gaji->id_penggajian}: " . $e->getMessage());
+            }
+        }
+
+        session()->flash('message', "Selesai! Sukses: $sukses, Gagal: $gagal.");
     }
 
     public function resetForm()

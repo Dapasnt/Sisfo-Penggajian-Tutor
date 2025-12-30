@@ -97,6 +97,22 @@
                                         </div>
                                     </div>
 
+                                    <!-- Rekening -->
+                                    <div class="form-group row mb-4">
+                                        <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">Rekening</label>
+                                        <div class="col-sm-12 col-md-7">
+                                            
+                                            <input class="form-control mb-2" wire:model.defer="account_number" rows="5" placeholder="Nomor Rekening Tutor"></input>
+                                            @error('account_number') <small class="text-danger">{{ $message }}</small> @enderror
+                                            
+                                            <input class="form-control mb-2" wire:model.defer="bank_code" rows="5" placeholder="Bank Rekening Tutor"></input>
+                                            @error('bank_code') <small class="text-danger">{{ $message }}</small> @enderror
+                                            
+                                            <input class="form-control mb-2" wire:model.defer="account_holder_name" rows="5" placeholder="Nama Pemegang Rekening"></input>
+                                            @error('account_holder_name') <small class="text-danger">{{ $message }}</small> @enderror
+                                        </div>
+                                    </div>
+
                                     <!-- Tombol -->
                                     <div class="form-group row mb-4">
                                         <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3"></label>
@@ -164,6 +180,9 @@
                                                 <th>Mata Pelajaran</th>
                                                 <th>Jenis Kelamin</th>
                                                 <th>Nomor HP</th>
+                                                <th>Nomor Rekening</th>
+                                                <th>Nama Bank</th>
+                                                <th>Nama Pemilik Rekening</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -177,6 +196,9 @@
                                                     <td>{{ $item->mapel }}</td>
                                                     <td>{{ $item->jns_kel }}</td>
                                                     <td>{{ $item->no_hp }}</td>
+                                                    <td>{{ $item->account_number }}</td>
+                                                    <td>{{ $item->bank_code }}</td>
+                                                    <td>{{ $item->account_holder_name }}</td>
                                                     <td>
                                                         <div class="btn-group" role="group">
                                                             <button wire:click="edit({{ $item->id }})"

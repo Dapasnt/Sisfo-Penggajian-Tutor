@@ -24,11 +24,13 @@ class Pertemuan extends Model
                 })
                 ->orWhereHas('kelas', function ($kq) use ($keyword) {
                     $kq->where('nama', 'like', '%' . $keyword . '%');
+                })
+                ->orWhereHas('durasi', function ($dq) use ($keyword) {
+                    $dq->where('durasi', 'like', '%' . $keyword . '%');
+                })
+                ->orWhereHas('jenjang', function ($jq) use ($keyword) {
+                    $jq->where('jenjang', 'like', '%' . $keyword . '%');
                 });
-                // ->orWhereHas('penggajian', function ($uq) use ($keyword) {
-                //     $uq->where('tgl_', 'like', '%' . $keyword . '%')
-                //         ->orWhere('email', 'like', '%' . $keyword . '%');
-                // })
         });
     }
 
