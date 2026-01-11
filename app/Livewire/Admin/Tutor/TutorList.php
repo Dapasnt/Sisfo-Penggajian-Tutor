@@ -16,7 +16,7 @@ class TutorList extends Component
 
     public $formAdd = false, $formEdit = false, $confirmingDelete = false;
     public $search = '';
-    public $id_tutor, $nama, $mapel, $jns_kel, $no_hp, $email, $username, $account_number, $bank_code, $account_holder_name;
+    public $id_tutor, $nama, $pendidikan, $mapel, $jns_kel, $no_hp, $email, $username, $account_number, $bank_code, $account_holder_name;
     public $selectedTutorId;
 
     // protected $paginationTheme = 'bootstrap';
@@ -37,6 +37,7 @@ class TutorList extends Component
         $this->validate([
             'nama' => 'required|string|max:255',
             'mapel' => 'required',
+            'pendidikan' => 'required',
             'jns_kel' => 'required|string',
             'no_hp' => 'required',
             'bank_code' => 'required',
@@ -47,6 +48,7 @@ class TutorList extends Component
         ], [
             'nama.required' => 'Nama wajib diisi.',
             'mapel.required' => 'Mata pelajaran wajib diisi.',
+            'pendidikan.required' => 'Pendidikan tutor wajib diisi.',
             'jns_kel.required' => 'Jenis kelamin wajib diisi.',
             'no_hp.required' => 'Nomor hp wajib diisi.',
             'bank_code.required' => 'Bank wajib diisi.',
@@ -62,10 +64,12 @@ class TutorList extends Component
                     'email'    => $this->email,
                     'password' => bcrypt('12345678'),
                     'id_role'     => 8, // Role Tutor
+                    'is_active'     => 1, // User Active
                 ]);
                 Tutor::create([
                     'id_user' => $newUser->id,
                     'nama' => $this->nama,
+                    'pendidikan' => $this->pendidikan,
                     'mapel' => $this->mapel,
                     'jns_kel' => $this->jns_kel,
                     'no_hp' => $this->no_hp,
@@ -88,6 +92,7 @@ class TutorList extends Component
         $tutor = Tutor::with('user')->findOrFail($id);
         $this->id_tutor = $tutor->id;
         $this->nama = $tutor->nama;
+        $this->pendidikan = $tutor->pendidikan;
         $this->mapel = $tutor->mapel;
         $this->jns_kel = $tutor->jns_kel;
         $this->no_hp = $tutor->no_hp;
@@ -104,6 +109,7 @@ class TutorList extends Component
         $userId = $tutor->id_user;
         $this->validate([
             'nama' => 'required|string|max:255',
+            'pendidikan' => 'required|string|max:255',
             'mapel' => 'required',
             'jns_kel' => 'required|string',
             'no_hp' => 'required',
@@ -115,6 +121,7 @@ class TutorList extends Component
             'email' => 'required|email|unique:users,email,' . $userId,
         ], [
             'nama.required' => 'Nama wajib diisi.',
+            'pendidikan.required' => 'Pendidikan wajib diisi.',
             'mapel.required' => 'Mata pelajaran wajib diisi.',
             'jns_kel.required' => 'Jenis kelamin wajib diisi.',
             'no_hp.required' => 'Nomor hp wajib diisi.',
@@ -128,12 +135,13 @@ class TutorList extends Component
             'email.email' => 'Format email tidak valid.',
         ]);
         try {
-            // 3. Gunakan Transaction untuk update 2 tabel
+            // Gunakan Transaction untuk update 2 tabel
             DB::transaction(function () use ($tutor) {
 
                 // Update Tabel Tutor
                 $tutor->update([
                     'nama' => $this->nama,
+                    'pendidikan' => $this->pendidikan,
                     'mapel' => $this->mapel,
                     'jns_kel' => $this->jns_kel,
                     'no_hp' => $this->no_hp,
@@ -183,6 +191,7 @@ class TutorList extends Component
         $this->formEdit = false;
         $this->id_tutor = '';
         $this->nama = '';
+        $this->pendidikan = '';
         $this->mapel = '';
         $this->jns_kel = '';
         $this->no_hp = '';

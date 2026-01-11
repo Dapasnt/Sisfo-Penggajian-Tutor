@@ -4,12 +4,13 @@
             Selamat datang, {{ Auth::user()->username }}!
         </h3>
 
+        @if (Auth::user()->id_role == 9 )
         <div class="section-body">
             <div class="row">
                 <div class="col-lg-4 col-md-4 col-sm-12">
                     <div class="card card-statistic-1">
                         <div class="card-icon shadow-primary bg-danger">
-                            <i class="fas fa-users"></i>
+                            <i class="fas fa-hourglass-half"></i>
                         </div>
                         <div class="card-wrap">
                             <div class="card-header">
@@ -133,5 +134,135 @@
                 </div>
             </div>
         </div>
+        @else
+        <div class="section-body">
+            <div class="row">
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    <div class="card card-statistic-1">
+                        <div class="card-icon shadow-primary bg-primary">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="card-wrap">
+                            <div class="card-header">
+                                <h4>User Aktif</h4>
+                            </div>
+                            <div class="card-Body">
+                                <h4>{{ $user->count() }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    <div class="card card-statistic-1">
+                        <div class="card-icon shadow-primary bg-info">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="card-wrap">
+                            <div class="card-header">
+                                <h4>Tutor Aktif</h4>
+                            </div>
+                            <div class="card-Body">
+                                <h4>{{ $tutor->count() }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    <div class="card card-statistic-1">
+                        <div class="card-icon shadow-primary bg-success">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="card-wrap">
+                            <div class="card-header">
+                                <h4>Total Gaji Tutor bulan ini</h4>
+                            </div>
+                            <div class="card-Body">
+                                <h4>Rp {{ number_format($penggajian->sum('total_honor'), 0, ',', '.') }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section-body">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                    <table class="table table-striped table-bordered mb-0">
+                                        <thead class="table-success">
+                                            <tr>
+                                                <th class="text-center" width="5%">No</th>
+                                                <th>Nama Tutor</th>
+                                                <th class="text-center">Jml Pertemuan</th>
+                                                <th class="text-center">Total Durasi Mengajar</th>
+                                                {{-- <th>Rincian (Rp)</th> --}}
+                                                <th>Total Dibayar</th>
+                                                <th class="text-center">Status Pembayaran</th>
+                                                <th class="text-center" width="15%">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($penggajian as $item)
+                                                <tr>
+                                                    <td class="text-center">
+                                                        {{ $loop->iteration + ($penggajian->firstItem() - 1) }}
+                                                    </td>
+
+                                                    <td>
+                                                        <div class="font-weight-bold">
+                                                            {{ $item->tutor->nama ?? 'Tutor Dihapus' }}
+                                                        </div>
+                                                        <div class="text-small text-muted">
+                                                            {{ $item->tutor->mapel ?? '-' }}
+                                                        </div>
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <span class="badge badge-info">{{ $item->total_pertemuan }} x</span>
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <span>{{ $item->total_durasi }} Menit</span>
+                                                    </td>
+
+                                                    <td class="font-weight-bold text-primary" style="font-size: 1.1em;">
+                                                        Rp {{ number_format($item->gaji_dibayar, 0, ',', '.') }}
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        @if($item->status_pembayaran == 'LUNAS')
+                                                            <div class="badge badge-success">LUNAS</div>
+                                                        @else
+                                                            <div class="badge badge-warning">PENDING</div>
+                                                        @endif
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <a class="btn btn-sm btn-info m-1" href="{{ route('admin.penggajian.list') }}">Daftar Gaji Tutor</a>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="7" class="text-center py-4">
+                                                        <div class="empty-state">
+                                                            <div class="empty-state-icon">
+                                                                <i class="fas fa-folder-open"></i>
+                                                            </div>
+                                                            <h2>Belum ada data gaji untuk periode {{ $bulan }}-{{ $tahun }}</h2>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
     </section>
 </div>

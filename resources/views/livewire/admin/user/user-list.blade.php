@@ -130,7 +130,7 @@
 
                                 <div class="table-responsive">
                                     <table class="table table-striped table-bordered mb-0">
-                                        <thead class="bg-light">
+                                        <thead class="table-success">
                                             <tr>
                                                 <th class="text-center">#</th>
                                                 <th>Username</th>
@@ -161,12 +161,11 @@
                                                                     class="fas fa-pencil-alt"></i></button>
 
                                                         @if($item->is_active)
-                                                            <button wire:click="toggleStatus({{ $item->id }})"
-                                                                wire:confirm="Yakin ingin menonaktifkan user ini?"
+                                                            <button wire:click="confirmStatus({{ $item->id }})"
                                                                 class="btn btn-danger btn-sm"><i class="fas fa-power-off"></i>
                                                             </button>
                                                         @else
-                                                            <button wire:click="toggleStatus({{ $item->id }})"
+                                                            <button wire:click="confirmStatus({{ $item->id }})"
                                                                 class="btn btn-success btn-sm"><i class="fas fa-power-off"></i>
                                                             </button>
                                                         @endif
@@ -193,20 +192,37 @@
 
 
     <!-- Modal Konfirmasi Hapus -->
-    @if ($confirmingDelete)
+    @if ($confirmingStatus)
         <div class="modal fade show d-block" tabindex="-1" role="dialog" style="background-color: rgba(0,0,0,0.5)">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
+                    @if ($is_active == 1)
                     <div class="modal-header">
-                        <h5 class="modal-title">Nonaktifkan</h5>
+                        <h5 class="modal-title">Nonaktifkan User</h5>
                     </div>
-                    <div class="modal-body">
-                        <p>Apakah Anda yakin ingin mengnonaktifkan user ini?</p>
+                        <div class="modal-body">
+                            <p>Apakah Anda yakin ingin mennonaktifkan user ini?</p>
+                        </div>
+                        <div class="modal-footer">
+                        <button wire:click="statusConfirmed" class="btn btn-danger">Ya, Nonaktifkan</button>
+                        <button wire:click="$set('confirmingStatus', false)" class="btn btn-secondary">Batal</button>
                     </div>
-                    <div class="modal-footer">
-                        <button wire:click="deleteConfirmed" class="btn btn-danger">Ya, Nonaktifkan</button>
-                        <button wire:click="$set('confirmingDelete', false)" class="btn btn-secondary">Batal</button>
+                    @else
+                    <div class="modal-header">
+                        <h5 class="modal-title">Aktivasi User</h5>
                     </div>
+                        <div class="modal-body">
+                            <p>Apakah Anda yakin ingin mengaktifkan user ini?</p>
+                        </div>
+                        <div class="modal-footer">
+                        <button wire:click="statusConfirmed" class="btn btn-danger">Ya, Aktifkan</button>
+                        <button wire:click="$set('confirmingStatus', false)" class="btn btn-secondary">Batal</button>
+                    </div>
+                    @endif
+                    {{-- <div class="modal-footer">
+                        <button wire:click="statusConfirmed" class="btn btn-danger">Ya, Nonaktifkan</button>
+                        <button wire:click="$set('confirmingStatus', false)" class="btn btn-secondary">Batal</button>
+                    </div> --}}
                 </div>
             </div>
         </div>

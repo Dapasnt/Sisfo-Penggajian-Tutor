@@ -55,7 +55,7 @@ class DurasiList extends Component
         // dd($id);
         $this->formEdit = true;
         $durasi = Durasi::findOrFail($id_durasi);
-        $this->id_durasi = $durasi->id;
+        $this->id_durasi = $durasi->id_durasi;
         $this->durasi = $durasi->durasi;
         $this->tarif = $durasi->tarif;
     }

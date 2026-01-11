@@ -17,6 +17,7 @@ class Tutor extends Model
     {
         return $query->where(function ($q) use ($keyword) {
             $q->where('nama', 'LIKE', '%' . $keyword . '%')
+                ->orWhere('pendidikan', 'LIKE', '%' . $keyword . '%')
                 ->orWhere('mapel', 'LIKE', '%' . $keyword . '%')
                 ->orWhere('no_hp', 'LIKE', '%' . $keyword . '%')
                 ->orWhere('jns_kel', 'LIKE', '%' . $keyword . '%')

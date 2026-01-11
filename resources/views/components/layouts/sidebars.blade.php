@@ -107,10 +107,22 @@
 
             @if (in_array($role, ['admin', 'tutor']))
                 {{-- Presensi Tutor --}}
+                <li class="menu-header">Presensi</li>
                 <li class="nav-item dropdown {{ request()->routeIs('admin.presensi.list') ? 'active' : '' }}">
                     <a href="{{ route('admin.presensi.list') }}">
                         <i class="fa-solid fa-person-chalkboard"></i>
                         <span>Presensi Tutor</span>
+                    </a>
+                </li>
+            @endif
+
+            @if (in_array($role, ['tutor']))
+                {{-- Penggajian Tutor --}}
+                <li class="menu-header">Penggajian</li>
+                <li class="nav-item dropdown {{ request()->routeIs('admin.penggajian.tutor') ? 'active' : '' }}">
+                    <a href="{{ route('admin.penggajian.tutor') }}">
+                        <i class="fa-solid fa-dollar-sign"></i>
+                        <span>Penggajian</span>
                     </a>
                 </li>
             @endif

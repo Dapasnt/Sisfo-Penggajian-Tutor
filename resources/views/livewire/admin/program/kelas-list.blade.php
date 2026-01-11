@@ -108,7 +108,7 @@
 
                         <div class="table-responsive">
                             <table class="table table-striped table-bordered mb-0">
-                                <thead class="bg-light">
+                                <thead class="table-success">
                                     <tr>
                                         <th>ID Kelas</th>
                                         <th>Nama</th>

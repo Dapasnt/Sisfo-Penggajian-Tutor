@@ -26,8 +26,8 @@ class LaporanGaji extends Component
 
     public function mount()
     {
-        $this->bulan = (int) date('m'); 
-        $this->tahun = date('Y');       
+        $this->bulan = (int) date('m');
+        $this->tahun = date('Y');
     }
 
     // Fungsi untuk menampilkan Modal Print
@@ -45,8 +45,10 @@ class LaporanGaji extends Component
         $data = $query->latest()->get();
 
         // 2. Siapkan Nama Bulan (Untuk Judul)
-        $namaBulan = \Carbon\Carbon::create()->month($this->bulan)->translatedFormat('F');
-
+        $namaBulan = \Carbon\Carbon::create()
+            ->month((int) $this->bulan)
+            ->translatedFormat('F');
+            
         // 3. Load View PDF
         $this->printData =  [
             'penggajians' => $data,
@@ -78,8 +80,10 @@ class LaporanGaji extends Component
 
         $data = $query->latest()->get();
 
-        // 2. Siapkan Nama Bulan (Untuk Judul)
-        $namaBulan = \Carbon\Carbon::create()->month($this->bulan)->translatedFormat('F');
+
+        $namaBulan = \Carbon\Carbon::create()
+            ->month((int) $this->bulan)
+            ->translatedFormat('F');
 
         // 3. Load View PDF
         $pdf = Pdf::loadView('admin.pdf.laporan-gaji', [
@@ -100,17 +104,17 @@ class LaporanGaji extends Component
             'bulan' => 'required',
             'tahun' => 'required',
         ]);
-        try{
-            $lapGaji = Penggajian::with('tutor','kelas','jenjang','durasi', 'pertemuan')
+        try {
+            $lapGaji = Penggajian::with('tutor', 'kelas', 'jenjang', 'durasi', 'pertemuan')
                 ->where('periode_bulan', $this->bulan)
                 ->where('periode_tahun', $this->tahun)
                 ->get();
 
             $this->dispatch('success-message', 'Filter berhasil diterapkan.');
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             $this->dispatch('failed-message', 'Terjadi kesalahan: ' . $th->getMessage());
         }
-        
+
 
         // Reset tampilan ke mode list
         $this->formTgl = false;
@@ -119,7 +123,7 @@ class LaporanGaji extends Component
 
     public function render()
     {
-        $query = Penggajian::with('tutor','kelas','jenjang','durasi', 'pertemuan'); 
+        $query = Penggajian::with('tutor', 'kelas', 'jenjang', 'durasi', 'pertemuan');
         if ($this->bulan) {
             $query->where('periode_bulan', $this->bulan);
         }

@@ -34,7 +34,7 @@
 
                     if (isCapturing) {
                         // --- MODE AMBIL FOTO ---
-                        console.log("Cekrek! Mengambil foto...");
+                        console.log("Mengambil foto...");
 
                         let canvas = document.createElement('canvas');
 
@@ -350,7 +350,7 @@
 
                                 <div class="table-responsive">
                                     <table class="table table-striped table-bordered mb-0">
-                                        <thead class="bg-light">
+                                        <thead class="table-success">
                                             <tr>
                                                 <th class="text-center">#</th>
                                                 @if (!Auth::user()->tutor)

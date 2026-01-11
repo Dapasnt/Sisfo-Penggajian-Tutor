@@ -52,7 +52,6 @@
                                         Biodata Tutor
                                     </div>
 
-
                                     <!-- Nama -->
                                     <div class="form-group row mb-4">
                                         <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">Nama
@@ -60,6 +59,16 @@
                                         <div class="col-sm-12 col-md-7">
                                             <input type="text" class="form-control" wire:model.defer="nama">
                                             @error('nama') <div class="text-danger">{{ $message }}</div> @enderror
+                                        </div>
+                                    </div>
+
+                                    <!-- Pendidikan -->
+                                    <div class="form-group row mb-4">
+                                        <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">Pendidikan
+                                            Tutor</label>
+                                        <div class="col-sm-12 col-md-7">
+                                            <input type="text" class="form-control" wire:model.defer="pendidikan">
+                                            @error('pendidikan') <div class="text-danger">{{ $message }}</div> @enderror
                                         </div>
                                     </div>
 
@@ -173,10 +182,11 @@
 
                                 <div class="table-responsive">
                                     <table class="table table-striped table-bordered mb-0">
-                                        <thead class="bg-light">
+                                        <thead class="table-success">
                                             <tr>
                                                 <th class="text-center">#</th>
                                                 <th>Nama</th>
+                                                <th>Pendidikan</th>
                                                 <th>Mata Pelajaran</th>
                                                 <th>Jenis Kelamin</th>
                                                 <th>Nomor HP</th>
@@ -193,6 +203,7 @@
                                                         {{ $loop->iteration + ($tutorList->firstItem() - 1) }}
                                                     </td>
                                                     <td>{{ $item->nama }}</td>
+                                                    <td>{{ $item->pendidikan }}</td>
                                                     <td>{{ $item->mapel }}</td>
                                                     <td>{{ $item->jns_kel }}</td>
                                                     <td>{{ $item->no_hp }}</td>

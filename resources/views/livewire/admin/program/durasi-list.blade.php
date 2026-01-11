@@ -91,7 +91,7 @@
 
                         <div class="table-responsive">
                             <table class="table table-striped table-bordered mb-0">
-                                <thead class="bg-light">
+                                <thead class="table-success">
                                     <tr>
                                         <th class="text-center">#</th>
                                         <th>Durasi</th>
@@ -107,9 +107,9 @@
                                         <td>{{ $item->tarif }}</td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <button wire:click="edit('{{ $item->id }}')" class="btn btn-sm btn-warning"><i class="fas fa-pencil-alt"></i></button>
+                                                <button wire:click="edit('{{ $item->id_durasi }}')" class="btn btn-sm btn-warning"><i class="fas fa-pencil-alt"></i></button>
                                                 {{-- <button wire:click="edit({{ $item->id_durasi }})" class="btn btn-sm btn-warning"><i class="fas fa-pencil-alt"></i></button> --}}
-                                                <button wire:click="confirmDelete('{{ $item->id }}')" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                                <button wire:click="confirmDelete('{{ $item->id_durasi }}')" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
                                             </div>
                                         </td>
                                     </tr>

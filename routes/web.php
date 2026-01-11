@@ -30,12 +30,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/jenjang/list', \App\Livewire\Admin\Program\JenjangList::class)->name('jenjang.list');
     Route::get('/durasi/list', \App\Livewire\Admin\Program\DurasiList::class)->name('durasi.list');
 
+    Route::get('/user/profile', \App\Livewire\Admin\User\Profile::class)->name('dashboard.user.profile');
     Route::get('/role/list', \App\Livewire\Admin\User\RoleList::class)->name('role.list');
     Route::get('/user/list', \App\Livewire\Admin\User\UserList::class)->name('user.list');
 
     Route::get('/penggajian/cetak-slip/{id}', [CetakSlip::class, 'cetakSlip'])->name('penggajian.cetak');
     Route::get('/penggajian/list', \App\Livewire\Admin\Penggajian\PenggajianList::class)->name('penggajian.list');
     Route::get('/pertemuan/list', \App\Livewire\Admin\Pertemuan\PertemuanList::class)->name('pertemuan.list');
+
+    Route::get('/penggajian/tutor', \App\Livewire\Admin\Penggajian\PenggajianTutor::class)->name('penggajian.tutor');
 
     Route::get('/dashboard', \App\Livewire\Admin\Dashboard\Dashboard::class)->name('dashboard');
     Route::get('/tutor/dashboard', \App\Livewire\Admin\Dashboard\TutorDashboard::class)->name('tutor.dashboard');

@@ -13,7 +13,7 @@ class UserList extends Component
 {
     use WithPagination;
 
-    public $formAdd = false, $formEdit = false, $confirmingDelete = false;
+    public $formAdd = false, $formEdit = false, $confirmingStatus = false;
     public $confirmingResetPassword = false;
     public $search = '';
     public $id_user, $username, $password, $email, $id_role, $is_active, $user;
@@ -102,17 +102,26 @@ class UserList extends Component
         }
     }
 
-    public function toggleStatus($id)
+    public function confirmStatus($id)
+    {
+        $this->selectedUserId = $id;
+        $this->confirmingStatus = true;
+        $user = User::find($id);
+        $this->is_active = $user->is_active;
+    }
+
+    public function statusConfirmed()
     {
         try {
-            $user = User::find($id);
+            $user = User::find($this->selectedUserId);
 
             // Logika Saklar: Kalau 1 jadi 0, Kalau 0 jadi 1
             $newStatus = $user->is_active == 1 ? 0 : 1;
 
             $user->update(['is_active' => $newStatus]);
-
+            
             $statusText = $newStatus == 1 ? 'diaktifkan' : 'dinonaktifkan';
+            $this->confirmingStatus = false;
             $this->dispatch('success-message', "User berhasil $statusText.");
         } catch (\Throwable $th) {
             $this->dispatch('failed-message', 'Terjadi kesalahan: ' . $th->getMessage());

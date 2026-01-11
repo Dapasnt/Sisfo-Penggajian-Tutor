@@ -82,8 +82,6 @@
                                        <button class="btn btn-primary"><i class="fas fa-search"></i></button>
                                    </div>
                                </div>
-                               {{-- <button wire:loading.remove wire:target="refresh" wire:click="refresh" class="btn btn-primary"><i class="fas fa-sync"></i></button>
-                               <button wire:loading wire:target="refresh" class="btn btn-primary"><i class="fas fa-sync fa-spin"></i></button> --}}
                             </div>
                         </div>
     
@@ -91,7 +89,7 @@
 
                         <div class="table-responsive">
                             <table class="table table-striped table-bordered mb-0">
-                                <thead class="bg-light">
+                                <thead class="table-success">
                                     <tr>
                                         <th class="text-center">#</th>
                                         <th>Nama</th>

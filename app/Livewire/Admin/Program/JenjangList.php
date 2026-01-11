@@ -55,10 +55,10 @@ class JenjangList extends Component
 
     public function edit($id_jenjang)
     {
-        // dd($id);
+        // dd($id_jenjang);
         $this->formEdit = true;
         $jenjang = Jenjang::findOrFail($id_jenjang);
-        $this->id_jenjang = $jenjang->id;
+        $this->id_jenjang = $jenjang->id_jenjang;
         $this->nama = $jenjang->nama;
         $this->deskripsi = $jenjang->deskripsi;
         $this->tarif = $jenjang->tarif;

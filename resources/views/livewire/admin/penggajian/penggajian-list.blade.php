@@ -16,40 +16,58 @@
                                 <div class="w-100 d-flex justify-content-between align-items-center mb-2">
                                     <h4 class="mb-0">Pilih Periode Penggajian</h4>
                                 </div>
-                                <div class="d-flex gap-2 align">
+                                <div class="gap-2 align">
                                     <h4 class="m-auto">Bulan</h4>
-                                    <select wire:model.live="bulan" class="p-2 border rounded mr-3">
+                                    <select wire:model.live="bulan" class="p-2 border rounded">
+                                        <option value="">--Pilih Bulan--</option>
                                         @for($i = 1; $i <= 12; $i++)
                                             <option value="{{ $i }}">
                                                 {{ \Carbon\Carbon::create()->month($i)->translatedFormat('F') }}
                                             </option>
                                         @endfor
                                     </select>
+                                    @error('bulan') <span class="text-danger">{{ $message }}</span> @enderror
 
                                     <h4 class="m-auto">Tahun</h4>
                                     <select wire:model.live="tahun" class="p-2 border rounded">
+                                        <option value="">--Pilih Tahun--</option>
                                         @for($y = 2023; $y <= date('Y') + 1; $y++)
                                             <option value="{{ $y }}">{{ $y }}</option>
                                         @endfor
                                     </select>
+                                    @error('tahun') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
 
                             </div>
                             <div class="form-group mb-4">
                                 <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3"></label>
                                 <div class="col-sm-12 col-md-7">
+                                    @if (Auth::user()->id_role == 9 )
                                     <button wire:click="generate" wire:loading.attr="disabled" type="button"
                                         class="btn btn-primary">
-
                                         <span wire:loading.remove wire:target="generate">
                                             Tampilkan
                                         </span>
-
                                         <span wire:loading wire:target="generate">
                                             <i class="fas fa-spinner fa-spin"></i> Sedang Menghitung...
                                         </span>
-
                                     </button>
+                                    @else
+                                    <button wire:click="lihatGaji" wire:loading.attr="disabled" type="button"
+                                        class="btn btn-primary">
+
+                                        <span wire:loading.remove wire:target="lihatGaji">
+                                            Tampilkan
+                                        </span>
+
+                                        <span wire:loading wire:target="lihatGaji">
+                                            <i class="fas fa-spinner fa-spin"></i> Sedang Menampilkan...
+                                        </span>
+                                    </button>
+                                    @endif
+                                    
+
+                                    
 
                                     <button wire:click="resetForm" type="button" class="btn btn-secondary">Kembali</button>
                                 </div>
@@ -176,7 +194,11 @@
 
                                 {{-- Tombol Pemilihan periode --}}
                                 <button wire:click="$set('formTgl', true)" class="btn btn-warning rounded-lg">
+                                    @if (Auth::user()->id_role == 9 )
                                     <i class="fas fa-calculator"></i> Hitung Gaji Baru
+                                    @else
+                                    <i class="fas fa-filter"></i> Filter Periode
+                                    @endif
                                 </button>
                             </div>
                             <div class="card-body">
@@ -195,20 +217,18 @@
                                 </div>
                                 <div class="clearfix mb-3"></div>
 
-
-
                                 {{-- Tabel --}}
                                 <div class="table-responsive">
                                     <table class="table table-striped table-bordered mb-0">
-                                        <thead class="bg-light">
+                                        <thead class="table-success">
                                             <tr>
                                                 <th class="text-center" width="5%">No</th>
                                                 <th>Nama Tutor</th>
                                                 <th class="text-center">Jml Pertemuan</th>
                                                 <th class="text-center">Total Durasi Mengajar</th>
                                                 {{-- <th>Rincian (Rp)</th> --}}
-                                                <th>Total Dibayar</th>
-                                                <th class="text-center">Status</th>
+                                                <th>Total Honor</th>
+                                                <th class="text-center">Status Pembayaran</th>
                                                 <th class="text-center" width="15%">Aksi</th>
                                             </tr>
                                         </thead>
@@ -236,20 +256,6 @@
                                                         <span>{{ $item->total_durasi }} Menit</span>
                                                     </td>
 
-                                                    {{-- <td>
-                                                        <div><b>{{ number_format($item->total_honor, 0, ',', '.') }}</b></div>
-
-                                                        @if($item->tunjangan > 0)
-                                                        <div class="text-success">+ Tunjangan: {{
-                                                            number_format($item->tunjangan, 0, ',', '.') }}</div>
-                                                        @endif
-
-                                                        @if($item->potongan > 0)
-                                                        <div class="text-danger">- Potongan: {{ number_format($item->potongan,
-                                                            0, ',', '.') }}</div>
-                                                        @endif
-                                                    </td> --}}
-
                                                     <td class="font-weight-bold text-primary" style="font-size: 1.1em;">
                                                         Rp {{ number_format($item->gaji_dibayar, 0, ',', '.') }}
                                                     </td>
@@ -271,10 +277,10 @@
                                                             class="btn btn-success btn-sm m-1" title="Cetak Slip">
                                                             <i class="fas fa-print"></i>
                                                         </button>
-                                                        <button wire:click="bayarGaji({{ $item->id_penggajian }})"
+                                                        {{-- <button wire:click="bayarGaji({{ $item->id_penggajian }})"
                                                             class="btn btn-dark btn-sm m-1" title="Bayar Gaji">
                                                             <i class="fas fa-dollar-sign"></i>
-                                                        </button>
+                                                        </button> --}}
                                                     </td>
                                                 </tr>
                                             @empty
@@ -285,9 +291,12 @@
                                                                 <i class="fas fa-folder-open"></i>
                                                             </div>
                                                             <h2>Belum ada data gaji untuk periode {{ $bulan }}-{{ $tahun }}</h2>
-                                                            <p class="lead">
+                                                            {{-- <p class="lead">
                                                                 Silakan klik tombol "Hitung Gaji Baru" di atas.
-                                                            </p>
+                                                            </p> --}}
+                                                            <button wire:click="$set('formTgl', true)" class="btn btn-warning rounded-lg">
+                                    <i class="fas fa-calculator"></i> Hitung Gaji Baru
+                                </button>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -309,11 +318,13 @@
                         <div class="card-body">
                             <h5>Pembayaran Gaji Periode {{ $bulan }} - {{ $tahun }}</h5>
                             <h6>Total Tutor: {{ $totalTutor }} | Total Nominal: Rp {{ number_format($totalNominal) }}</h6>
+                            @if (Auth::user()->id_role == 7 )
                             <button wire:click="bayarSemua"
                                 wire:confirm="Yakin ingin mentransfer gaji ke SEMUA tutor sekaligus?"
                                 class="btn btn-primary btn-lg">
                                 <i class="fas fa-paper-plane"></i> Bayar Serentak (Batch)
                             </button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -373,45 +384,6 @@
                             </div>
 
                             <div class="mb-12">
-                                {{-- <table class="w-full border border-black text-sm">
-                                    <thead>
-                                        <tr class="bg-gray-200">
-                                            <th class="border border-black px-3 py-2 text-left font-bold w-3/4">Keterangan
-                                            </th>
-                                            <th class="border border-black px-3 py-2 text-left font-bold">Jumlah / Nilai
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="border border-black px-3 py-2">Total Pertemuan Mengajar</td>
-                                            <td class="border border-black px-3 py-2">{{ $selectedGaji->total_pertemuan }}
-                                                sesi
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="border border-black px-3 py-2">Total Durasi Mengajar</td>
-                                            <td class="border border-black px-3 py-2">{{ $selectedGaji->total_durasi }}
-                                                menit
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="border border-black px-3 py-2">Gaji Pokok / Honor Mengajar</td>
-                                            <td class="border border-black px-3 py-2">Rp
-                                                {{ number_format($selectedGaji->total_honor ?? 56000, 0, ',', '.') }}
-                                            </td>
-                                        </tr>
-                                        <tr class="bg-gray-200 font-bold">
-                                            <td class="border border-black px-3 py-2 uppercase">TOTAL DITERIMA (TAKE HOME
-                                                PAY)
-                                            </td>
-                                            <td class="border border-black px-3 py-2">Rp
-                                                {{ number_format($selectedGaji->gaji_dibayar ?? 56000, 0, ',', '.') }}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table> --}}
-
                                 <table class="table-rincian">
                                     <thead>
                                         <tr style="background-color: #f0f0f0;">
